@@ -93,6 +93,36 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	}
 
 	/**
+	 * Return the string definition of the calculation type
+	 *
+	 * @return string
+	 */
+	public function getCalctypeText()
+	{
+		switch($this->getCalctype()) {
+			case self::CALCTYPE_INSTANT:
+				return 'Instant';
+				break;
+
+			case self::CALCTYPE_INVERS_AVERAGE:
+				return 'InversAverage';
+				break;
+
+			case self::CALCTYPE_DIFFERENCE_PERCENTAGE:
+				return 'DifferencePercentage';
+				break;
+
+			case self::CALCTYPE_DIFFERENCE:
+				return 'Difference';
+				break;
+
+			case self::CALCTYPE_AVERAGE:
+				return 'Average';
+				break;
+		}
+	}
+
+	/**
 	 * Set the datatype for this metric
 	 *
 	 * @param string $type One of the predefined data types
