@@ -7,14 +7,14 @@
  * @created 2015-07-03
  * @version 1.0
  */
-class CoScale_Monitor_Model_Event_Store extends Varien_Event_Observer
+class CoScale_Monitor_Model_Event_Store
 {
 	/**
 	 * Track the adding of a new store
 	 *
-	 * @param Varien_Event $event
+	 * @param Varien_Event_Observer $event
 	 */
-	public function addNew(Varien_Event $event)
+	public function addNew(Varien_Event_Observer $event)
 	{
 		/** @var Mage_Core_Model_Store $store */
 		$store = $event->getStore();

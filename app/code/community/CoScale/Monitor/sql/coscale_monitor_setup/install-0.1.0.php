@@ -89,11 +89,19 @@ $metric = $installer->getConnection()
 					           5,
 					           array(
 					               'nullable'  => false,
-					               'primary'   => false,
+					               'primary'   => true,
+					               'identity'  => true
 					           ),
 					           'Identifier')
-					->addColumn('datatype', Varien_Db_Ddl_Table::TYPE_INTEGER,
-					            2,
+					->addColumn('key', Varien_Db_Ddl_Table::TYPE_INTEGER,
+					            5,
+					            array(
+						            'nullable'  => false,
+						            'primary'   => false,
+					            ),
+					            'Fixed identifier for the metric')
+					->addColumn('datatype', Varien_Db_Ddl_Table::TYPE_VARCHAR,
+					            32,
 					            array(
 						            'nullable'  => false,
 						            'primary'   => false,
@@ -113,6 +121,20 @@ $metric = $installer->getConnection()
 	                               'primary'   => false,
                                ),
                                'Metric description')
+					->addColumn('value', Varien_Db_Ddl_Table::TYPE_VARCHAR,
+					            255,
+					            array(
+						            'nullable'  => true,
+						            'primary'   => false,
+					            ),
+					            'Metric value (mixed content)')
+					->addColumn('unit', Varien_Db_Ddl_Table::TYPE_VARCHAR,
+					            10,
+					            array(
+						            'nullable'  => false,
+						            'primary'   => false,
+					            ),
+					            'Metric unit')
                    ->addColumn('groups', Varien_Db_Ddl_Table::TYPE_VARCHAR,
                                255,
                                array(
@@ -120,13 +142,6 @@ $metric = $installer->getConnection()
 	                               'primary'   => false,
                                ),
                                'Metric groups')
-                   ->addColumn('unit', Varien_Db_Ddl_Table::TYPE_VARCHAR,
-                               10,
-                               array(
-	                               'nullable'  => false,
-	                               'primary'   => false,
-                               ),
-                               'Metric unit')
                    ->addColumn('tags', Varien_Db_Ddl_Table::TYPE_VARCHAR,
                                255,
                                array(
@@ -149,7 +164,7 @@ $metric = $installer->getConnection()
                                null,
                                array(),
                                'Update Timestamp')
-                   ->addIndex('COSCALE_METRIC_IDX', 'id')
+                   ->addIndex('COSCALE_METRIC_KEY_UNIQUE_IDX', 'key', array('type' => 'UNIQUE'))
                    ->setComment('CoScale metric data');
 
 $metric->setOption('type', Varien_Db_Adapter_Pdo_Mysql::ENGINE_MEMORY);

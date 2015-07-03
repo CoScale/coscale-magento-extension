@@ -47,11 +47,26 @@ class CoScale_Shell extends Mage_Shell_Abstract
 			                            'version' => $event->getVersion());
 
 			if ($event->getState() != $event::STATE_ENABLED) {
-				$event->delete();
+				//$event->delete();
 			}
 		}
 
 		$output['metrics'] = array();
+
+		$collection = Mage::getModel('coscale_monitor/metric')->getCollection();
+		/** @var CoScale_Monitor_Model_Metric $metric */
+		foreach($collection as $metric) {
+			$output['metrics'][] = array('id' => $metric->getKey(),
+			                             'datatype' => $metric->getDatatype(),
+			                             'name' => $metric->getName(),
+			                             'description' => $metric->getDescription(),
+			                             'groups' => $metric->getGroups(),
+			                             'unit' => $metric->getUnit(),
+			                             'tags' => $metric->getTags(),
+			                             'calctype' => $metric->getCalctypeText(),
+			                             'value' => $metric->getValue(),
+			                             'timestamp' => $metric->getTimestamp());
+		}
 
 		echo Zend_Json::encode($output);
 	}
@@ -61,7 +76,11 @@ class CoScale_Shell extends Mage_Shell_Abstract
 	 */
 	private function generateData()
 	{
-		printf("M1: %f\n", 8.5);
+		$collection = Mage::getModel('coscale_monitor/metric')->getCollection();
+		/** @var CoScale_Monitor_Model_Metric $metric */
+		foreach($collection as $metric) {
+			printf('M%d: %s'."\n", $metric->getKey(), (string)$metric->getValue());
+		}
 	}
 }
 

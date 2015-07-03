@@ -43,12 +43,20 @@
         <events>
             <store_save_after>
                 <observers>
-                    <coscale_monitor_store_add>
+                    <coscale_monitor_event_store_add>
                         <class>coscale_monitor/event_store</class>
                         <method>addNew</method>
-                    </coscale_monitor_store_add>
+                    </coscale_monitor_event_store_add>
                 </observers>
             </store_save_after>
+            <customer_save_after>
+                <observers>
+                    <coscale_monitor_metric_customer_add>
+                        <class>coscale_monitor/metric_customer</class>
+                        <method>addNew</method>
+                    </coscale_monitor_metric_customer_add>
+                </observers>
+            </customer_save_after>
         </events>
     </global>
     <default>
