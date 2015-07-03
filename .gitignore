@@ -67,3 +67,7 @@
 !/skin/frontend/base/default
 /skin/frontend/base/default/*
 !/skin/frontend/base/default/coscale*
+
+!/shell/
+/shell/*
+!/shell/coscale*
