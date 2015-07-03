@@ -15,10 +15,11 @@ $installer->startSetup();
 $event = $installer->getConnection()
 					->newTable($installer->getTable('coscale_monitor/event'))
 					->addColumn('id', Varien_Db_Ddl_Table::TYPE_INTEGER,
-					           5,
+					           10,
 					           array(
 									'nullable'  => false,
-									'primary'   => false,
+									'primary'   => true,
+									'identity'  => true
 								),
 					           'Identifier')
 					->addColumn('name', Varien_Db_Ddl_Table::TYPE_VARCHAR,
@@ -35,6 +36,13 @@ $event = $installer->getConnection()
 					               'primary'   => false,
 					           ),
 					           'Event description')
+					->addColumn('event_data', Varien_Db_Ddl_Table::TYPE_VARCHAR,
+					            255,
+					            array(
+						            'nullable'  => true,
+						            'primary'   => false,
+					            ),
+					            'Event data (json)')
 					->addColumn('type', Varien_Db_Ddl_Table::TYPE_VARCHAR,
 					           50,
 					           array(
@@ -71,7 +79,6 @@ $event = $installer->getConnection()
                                null,
                                array(),
                                'Update Timestamp readable')
-	               ->addIndex('COSCALE_EVENT_IDX', 'id')
                    ->setComment('CoScale event data');
 
 $event->setOption('type', Varien_Db_Adapter_Pdo_Mysql::ENGINE_MEMORY);

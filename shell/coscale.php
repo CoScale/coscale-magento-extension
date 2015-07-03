@@ -32,7 +32,28 @@ class CoScale_Shell extends Mage_Shell_Abstract
 	 */
 	private function generateJson()
 	{
-		printf("{json: \"temporary placeholder\"}\n");
+		$output = array('maxruntime' => Mage::getStoreConfig('coscale/general/maxruntime'));
+		$output['events'] = array();
+
+		$collection = Mage::getModel('coscale_monitor/event')->getCollection();
+
+		foreach($collection as $event) {
+
+			$output['events'][] = array('id' => $event->getId(),
+			                            'timestamp' => $event->getTimestamp(),
+			                            'message' => $event->getName(),
+			                            'subject' => $event->getDescription(),
+			                            'data' => $event->getEventData(),
+			                            'version' => $event->getVersion());
+
+			if ($event->getState() != $event::STATE_ENABLED) {
+				$event->delete();
+			}
+		}
+
+		$output['metrics'] = array();
+
+		echo Zend_Json::encode($output);
 	}
 
 	/**

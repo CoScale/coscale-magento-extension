@@ -16,5 +16,4 @@ class CoScale_Monitor_Model_Resource_Event extends Mage_Core_Model_Resource_Db_A
     {
         $this->_init('coscale_monitor/event', 'id');
     }
-
 }
