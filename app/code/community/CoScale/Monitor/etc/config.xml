@@ -57,6 +57,23 @@
                     </coscale_monitor_metric_customer_add>
                 </observers>
             </customer_save_after>
+
+            <controller_action_predispatch_adminhtml_process_massReindex>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_reindex</class>
+                        <method>startIndex</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_predispatch_adminhtml_process_massReindex>
+            <controller_action_postdispatch_adminhtml_process_massReindex>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_reindex</class>
+                        <method>endIndex</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_postdispatch_adminhtml_process_massReindex>
         </events>
     </global>
     <default>

@@ -48,6 +48,26 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	const TYPE_STORE_ADD = 'STORE_ADD';
 
 	/**
+	 * Event type for flushing the page cache
+	 */
+	const TYPE_FLUSH_PAGE_CACHE = 'FLUSH_PAGE_CACHE';
+
+	/**
+	 * Event for flushing the asset cache
+	 */
+	const TYPE_FLUSH_ASSET_CACHE = 'FLUSH_ASSET_CACHE';
+
+	/**
+	 * Event for flushing the image cache
+	 */
+	const TYPE_FLUSH_IMAGE_CACHE = 'FLUSH_IMAGE_CACHE';
+
+	/**
+	 * Event for the reindexing
+	 */
+	const TYPE_REINDEX = 'REINDEX';
+
+	/**
 	 * Construct the event model
 	 */
     protected function _construct()
@@ -107,7 +127,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	 */
 	public function setType($type)
 	{
-		if ( ! in_array($type, array(self::TYPE_STORE_ADD))) {
+		if ( ! in_array($type, $this->getTypes())) {
 			throw new Exception('Only predefined types can be used.');
 		}
 
@@ -134,10 +154,11 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	 * @param string $description Description of the event
 	 * @param array  $data        An array of data to expose to CoScale
 	 * @param string $source      The causer of the event, logged in user, etc
+	 * @param int    $state       The state of the event
 	 *
 	 * @return $this
 	 */
-	public function addEvent($type, $name, $description, array $data, $source)
+	public function addEvent($type, $name, $description, array $data, $source, $state = null)
 	{
 		$this->setType($type)
 		     ->setName($name)
@@ -145,6 +166,12 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 		     ->setEventData($data)
 			 ->setDuration(0)
 		     ->setSource($source);
+
+		// By default we're assuming events don't do much and we're simply logging them
+		// if an event takes longer, the enabled state needs to be defined in the call
+		if (is_null($state)) {
+			$this->setState(self::STATE_INACTIVE);
+		}
 
 		$this->save();
 
@@ -189,7 +216,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	 */
 	public function loadLastByType($type)
 	{
-		if ( ! in_array($type, array(self::TYPE_STORE_ADD))) {
+		if ( ! in_array($type, $this->getTypes())) {
 			throw new Exception('Type should be one of the predefined keys');
 		}
 
@@ -211,5 +238,17 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 			 ->setVersion($this->getVersion()+1);
 
 		return $this;
+	}
+
+	/**
+	 * Retrieve the available types as an array
+	 *
+	 * @return array
+	 */
+	protected function getTypes()
+	{
+		return array(self::TYPE_REINDEX, self::TYPE_STORE_ADD,
+		             self::TYPE_FLUSH_ASSET_CACHE, self::TYPE_FLUSH_IMAGE_CACHE,
+		             self::TYPE_FLUSH_PAGE_CACHE);
 	}
 }
