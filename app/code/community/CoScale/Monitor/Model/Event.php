@@ -12,6 +12,7 @@
  * @method $this setDescription(string $description)
  * @method $this setSource(string $source)
  * @method $this setVersion(int $version)
+ * @method $this setDuration(int $duration)
  * @method $this setTimestamp(int $timestamp)
  * @method $this setUpdatedAt(string $date)
  * @method int getId()
@@ -21,6 +22,7 @@
  * @method string getSource()
  * @method int getState()
  * @method int getTimestamp()
+ * @method int getDuration()
  * @method string getUpdatedAt()
  */ 
 class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
@@ -127,7 +129,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	/**
 	 * Shorthand for adding new events
 	 *
-	 * @param int    $type        The event type as predefined in this model
+	 * @param string $type        The event type as predefined in this model
 	 * @param string $name        Short name for the event
 	 * @param string $description Description of the event
 	 * @param array  $data        An array of data to expose to CoScale
@@ -141,10 +143,57 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 		     ->setName($name)
 		     ->setDescription($description)
 		     ->setEventData($data)
+			 ->setDuration(0)
 		     ->setSource($source);
 
 		$this->save();
 
+		return $this;
+	}
+
+	/**
+	 * Shorthand to update an event
+	 *
+	 * @param string $type The predefined type to load the event by
+	 * @param int $state The state of the event
+	 * @param string $source Source of the event, who triggered it
+	 * @param array $data Event data to store
+	 *
+	 * @throws Exception
+	 */
+	public function updateEvent($type, $state, $source = null, array $data = array())
+	{
+		$this->loadLastByType($type);
+		$this->setDuration((time()-$this->getTimestamp()))
+			 ->setState($state);
+
+		if ( ! is_null($source)) {
+			$this->setSource($source);
+		}
+
+		if ( ! is_null($data)) {
+			$this->setEventData($data);
+		}
+
+		$this->save();
+	}
+
+	/**
+	 * Load an event by it's type
+	 *
+	 * @param string $type The predefined type to load the event by
+	 *
+	 * @return $this
+	 *
+	 * @throws Exception
+	 */
+	public function loadLastByType($type)
+	{
+		if ( ! in_array($type, array(self::TYPE_STORE_ADD))) {
+			throw new Exception('Type should be one of the predefined keys');
+		}
+
+		$this->_getResource()->loadByType($this, $type);
 		return $this;
 	}
 

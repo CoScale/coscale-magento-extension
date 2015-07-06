@@ -17,70 +17,37 @@ class CoScale_Shell extends Mage_Shell_Abstract
 	 */
 	public function run()
 	{
-		if ($this->getArg('c')) {
-			$this->generateJson();
+		$output['metrics'] = array();
 
-		} elseif ($this->getArg('d')) {
-			$this->generateData();
+		$collection = Mage::getModel('coscale_monitor/metric')->getCollection();
+		/** @var CoScale_Monitor_Model_Metric $metric */
+		foreach($collection as $metric) {
+			$output['metrics'][] = array('name' => $metric->getName(),
+			                             'unit' => $metric->getUnit(),
+			                             'value' => $metric->getValue(),
+			                             'store_id' => $metric->getStoreId(),
+			                             'type' => $metric->getType());
 		}
-	}
 
-	/**
-	 * output a json string of all the combined information
-	 *
-	 * @return string
-	 */
-	private function generateJson()
-	{
-		$output = array('maxruntime' => Mage::getStoreConfig('coscale/general/maxruntime'));
 		$output['events'] = array();
 
 		$collection = Mage::getModel('coscale_monitor/event')->getCollection();
 
 		foreach($collection as $event) {
 
-			$output['events'][] = array('id' => $event->getId(),
-			                            'timestamp' => $event->getTimestamp(),
+			$output['events'][] = array('type' => $event->getType(),
 			                            'message' => $event->getName(),
-			                            'subject' => $event->getDescription(),
-			                            'data' => $event->getEventData(),
-			                            'version' => $event->getVersion());
+			                            'start_time' => $event->getDescription(),
+			                            'stop_time' => $event->getEventData(),
+			                            );
 
 			if ($event->getState() != $event::STATE_ENABLED) {
 				//$event->delete();
 			}
 		}
 
-		$output['metrics'] = array();
-
-		$collection = Mage::getModel('coscale_monitor/metric')->getCollection();
-		/** @var CoScale_Monitor_Model_Metric $metric */
-		foreach($collection as $metric) {
-			$output['metrics'][] = array('id' => $metric->getKey(),
-			                             'datatype' => $metric->getDatatype(),
-			                             'name' => $metric->getName(),
-			                             'description' => $metric->getDescription(),
-			                             'groups' => $metric->getGroups(),
-			                             'unit' => $metric->getUnit(),
-			                             'tags' => $metric->getTags(),
-			                             'calctype' => $metric->getCalctypeText(),
-			                             'value' => $metric->getValue(),
-			                             'timestamp' => $metric->getTimestamp());
-		}
 
 		echo Zend_Json::encode($output);
-	}
-
-	/**
-	 * Output a compressed version of the data
-	 */
-	private function generateData()
-	{
-		$collection = Mage::getModel('coscale_monitor/metric')->getCollection();
-		/** @var CoScale_Monitor_Model_Metric $metric */
-		foreach($collection as $metric) {
-			printf('M%d: %s'."\n", $metric->getKey(), (string)$metric->getValue());
-		}
 	}
 }
 
