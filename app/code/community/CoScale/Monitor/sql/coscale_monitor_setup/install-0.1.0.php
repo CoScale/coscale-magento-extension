@@ -164,7 +164,7 @@ $metric = $installer->getConnection()
                                null,
                                array(),
                                'Update Timestamp')
-                   ->addIndex('COSCALE_METRIC_KEY_UNIQUE_IDX', 'key', array('type' => 'UNIQUE'))
+                   ->addIndex('COSCALE_METRIC_UNIQUE_IDX', 'key', array('type' => 'UNIQUE'))
                    ->setComment('CoScale metric data');
 
 $metric->setOption('type', Varien_Db_Adapter_Pdo_Mysql::ENGINE_MEMORY);

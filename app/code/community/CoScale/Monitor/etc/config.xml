@@ -57,6 +57,14 @@
                     </coscale_monitor_metric_customer_add>
                 </observers>
             </customer_save_after>
+            <sales_order_place_after>
+                <observers>
+                    <coscale_monitor_metric_order_add>
+                        <class>coscale_monitor/metric_order</class>
+                        <method>addNew</method>
+                    </coscale_monitor_metric_order_add>
+                </observers>
+            </sales_order_place_after>
 
             <controller_action_predispatch_adminhtml_process_massReindex>
                 <observers>

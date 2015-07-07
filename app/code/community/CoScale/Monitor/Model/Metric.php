@@ -42,12 +42,22 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	/**
 	 * Identifier for total orders
 	 */
-	const ID_TOTAL_ORDERS = 1;
+	const KEY_ORDER_TOTAL = 10;
+
+	/**
+	 * Identifier for order amount average
+	 */
+	const KEY_ORDER_AVERAGE = 11;
+
+	/**
+	 * Identifier for order size average
+	 */
+	const KEY_ORDER_SIZE = 13;
 
 	/**
 	 * Identifier for the total number of customers in the system
 	 */
-	const ID_TOTAL_CUSTOMERS = 2;
+	const KEY_CUSTOMER_TOTAL = 2;
 
 
 
@@ -74,9 +84,7 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	 */
 	public function updateMetric($key, $store, $type, $name, $description, $value, $unit)
 	{
-		if (is_null($this->getKey())) {
-			$this->loadByKey($key, $store);
-		}
+		$this->loadByKey($key, $store);
 
 		$this->setKey($key)
 			 ->setStoreId($store)
@@ -85,6 +93,8 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 			 ->setDescription($description)
 			 ->setValue($value)
 			 ->setUnit($unit);
+
+		Mage::log('saving metric');
 
 		$this->save();
 	}
@@ -102,7 +112,10 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	 */
 	public function incrementMetric($key, $store, $type, $name, $description, $value, $unit)
 	{
+		Mage::log('incrementing metric');
 		$this->loadByKey($key, $store);
+
+		Mage::log('loaded '.$this->getId());
 
 		$this->updateMetric($key, $store, $type, $name, $description, ($this->getValue()+$value), $unit);
 	}
@@ -134,8 +147,10 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	 */
 	protected function getMetrics()
 	{
-		return array(self::ID_TOTAL_ORDERS,
-		             self::ID_TOTAL_CUSTOMERS);
+		return array(self::KEY_ORDER_TOTAL,
+		             self::KEY_ORDER_AVERAGE,
+		             self::KEY_ORDER_SIZE,
+		             self::KEY_CUSTOMER_TOTAL);
 	}
 
 	/**

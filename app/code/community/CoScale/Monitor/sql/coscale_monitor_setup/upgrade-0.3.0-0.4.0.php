@@ -12,11 +12,14 @@ $installer = $this;
 
 $installer->startSetup();
 
-$event = $installer->getConnection();
-$event->changeColumn($installer->getTable('coscale_monitor/event'), 'datatype', 'type', 'VARCHAR(1) UNSIGNED NULL');
-$event->dropColumn($installer->getTable('coscale_monitor/event'), 'groups');
-$event->dropColumn($installer->getTable('coscale_monitor/event'), 'tags');
-$event->dropColumn($installer->getTable('coscale_monitor/event'), 'calctype');
-$event->addColumn($installer->getTable('coscale_monitor/event'), 'store_id', 'INT(5) UNSIGNED NOT NULL');
+$metric = $installer->getConnection();
+$metric->changeColumn($installer->getTable('coscale_monitor/metric'), 'datatype', 'type', 'VARCHAR(1) NULL');
+$metric->dropColumn($installer->getTable('coscale_monitor/metric'), 'groups');
+$metric->dropColumn($installer->getTable('coscale_monitor/metric'), 'tags');
+$metric->dropColumn($installer->getTable('coscale_monitor/metric'), 'calctype');
+$metric->addColumn($installer->getTable('coscale_monitor/metric'), 'store_id', 'INT(5) UNSIGNED NOT NULL');
+
+$metric->dropIndex($installer->getTable('coscale_monitor/metric'), 'COSCALE_METRIC_UNIQUE_IDX');
+$metric->addIndex($installer->getTable('coscale_monitor/metric'), 'COSCALE_METRIC_UNIQUE_IDX', array('key', 'store_id'), $metric::INDEX_TYPE_UNIQUE);
 
 $installer->endSetup();
