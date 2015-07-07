@@ -38,7 +38,7 @@ class CoScale_Shell extends Mage_Shell_Abstract
 			$output['events'][] = array('type' => $event->getTypeGroup(),
 			                            'message' => $event->getName(),
 			                            'start_time' => (time()-$event->getTimestampStart()),
-			                            'stop_time' => ((time()-$event->getTimestampEnd())),
+			                            'stop_time' => ($event->getTimestampEnd() != 0 ? (time()-$event->getTimestampEnd()) : 0),
 			                            );
 
 			if ($event->getState() != $event::STATE_ENABLED) {
