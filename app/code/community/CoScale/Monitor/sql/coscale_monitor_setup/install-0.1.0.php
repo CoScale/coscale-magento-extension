@@ -3,7 +3,7 @@
  * Set up an key value based database structure
  *
  * @package CoScale_Monitor
- * @author Rian Orie <rian.orie@gmail.com>
+ * @author Rian Orie <rian.orie@supportdesk.nu>
  * @created 2015-07-03
  * @version 1.0
  */ 

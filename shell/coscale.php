@@ -32,13 +32,13 @@ class CoScale_Shell extends Mage_Shell_Abstract
 		$output['events'] = array();
 
 		$collection = Mage::getModel('coscale_monitor/event')->getCollection();
-
+		/** @var CoScale_Monitor_Model_Event $event */
 		foreach($collection as $event) {
 
-			$output['events'][] = array('type' => $event->getType(),
+			$output['events'][] = array('type' => $event->getTypeGroup(),
 			                            'message' => $event->getName(),
-			                            'start_time' => (time()-$event->getTimestamp()),
-			                            'stop_time' => ((time()-$event->getTimestamp())+$event->getDuration()),
+			                            'start_time' => (time()-$event->getTimestampStart()),
+			                            'stop_time' => ((time()-$event->getTimestampEnd())),
 			                            );
 
 			if ($event->getState() != $event::STATE_ENABLED) {
@@ -46,6 +46,15 @@ class CoScale_Shell extends Mage_Shell_Abstract
 			}
 		}
 
+		$output['modules'] = array();
+		foreach(Mage::getConfig()->getNode('modules')->children() as $module) {
+			$output['modules'][] = array('name' => $module->getName(), 'version' => (string)$module->version);
+		}
+
+		$output['stores'] = array();
+		foreach(Mage::app()->getStores() as $store) {
+			$output['stores'][] = array('name' => $store->getName(), 'id' => $store->getId());
+		}
 
 		echo Zend_Json::encode($output);
 	}

@@ -20,20 +20,21 @@ class CoScale_Monitor_Model_Resource_Metric extends Mage_Core_Model_Resource_Db_
 	/**
 	 * Load metric by key
 	 *
-	 * @throws Exception
-	 *
 	 * @param CoScale_Monitor_Model_Metric $metric
-	 * @param int $key The identifier to load the metric by
-
+	 * @param int $key   The identifier to load the metric by
+	 * @param int $store The store to load the metric belongs to
+	 *
 	 * @return $this
+	 *
+	 * @throws Exception
 	 */
-	public function loadByKey(CoScale_Monitor_Model_Metric $metric, $key)
+	public function loadByKey(CoScale_Monitor_Model_Metric $metric, $key, $store)
 	{
 		$adapter = $this->_getReadAdapter();
-		$bind    = array('key' => $key);
+		$bind    = array('key' => $key, 'store' => $store);
 		$select  = $adapter->select()
 		                   ->from($this->getTable('coscale_monitor/metric'), array('id'))
-		                   ->where('`key` = :key');
+		                   ->where('`key` = :key AND `store_id` = :store');
 
 
 		$metricId = $adapter->fetchOne($select, $bind);

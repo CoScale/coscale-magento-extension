@@ -33,7 +33,8 @@ class CoScale_Monitor_Model_Resource_Event extends Mage_Core_Model_Resource_Db_A
 		$bind    = array('type' => $type);
 		$select  = $adapter->select()
 		                   ->from($this->getTable('coscale_monitor/event'), array('id'))
-		                   ->where('`type` = :type');
+		                   ->where('`type` = :type')
+			               ->order('id DESC');
 
 
 		$eventId = $adapter->fetchOne($select, $bind);

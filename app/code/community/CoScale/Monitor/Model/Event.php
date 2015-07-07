@@ -13,7 +13,8 @@
  * @method $this setSource(string $source)
  * @method $this setVersion(int $version)
  * @method $this setDuration(int $duration)
- * @method $this setTimestamp(int $timestamp)
+ * @method $this setTimestampStart(int $timestamp)
+ * @method $this setTimestampEnd(int $timestamp)
  * @method $this setUpdatedAt(string $date)
  * @method int getId()
  * @method string getName()
@@ -21,7 +22,8 @@
  * @method string getType()
  * @method string getSource()
  * @method int getState()
- * @method int getTimestamp()
+ * @method int getTimestampStart()
+ * @method int getTimestampEnd()
  * @method int getDuration()
  * @method string getUpdatedAt()
  */ 
@@ -41,6 +43,8 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	 * Enabled/active state for events
 	 */
 	const STATE_ENABLED = 1;
+
+	const GROUP_ADMIN = 'Admin actions';
 
 	/**
 	 * Event type for adding stores
@@ -165,12 +169,15 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 		     ->setDescription($description)
 		     ->setEventData($data)
 			 ->setDuration(0)
-		     ->setSource($source);
+			 ->setTimestampStart(time())
+		     ->setSource($source)
+			 ->setState($state);
 
 		// By default we're assuming events don't do much and we're simply logging them
 		// if an event takes longer, the enabled state needs to be defined in the call
 		if (is_null($state)) {
-			$this->setState(self::STATE_INACTIVE);
+			$this->setState(self::STATE_INACTIVE)
+				 ->setTimestampEnd(time());
 		}
 
 		$this->save();
@@ -191,7 +198,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	public function updateEvent($type, $state, $source = null, array $data = array())
 	{
 		$this->loadLastByType($type);
-		$this->setDuration((time()-$this->getTimestamp()))
+		$this->setTimestampEnd(time())
 			 ->setState($state);
 
 		if ( ! is_null($source)) {
@@ -225,6 +232,23 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	}
 
 	/**
+	 * Type groups for the reporting and grouping of types
+	 *
+	 * @return string
+	 */
+	public function getTypeGroup()
+	{
+		switch($this->getType()) {
+			case self::TYPE_STORE_ADD:
+			case self::TYPE_FLUSH_PAGE_CACHE:
+			case self::TYPE_FLUSH_ASSET_CACHE:
+			case self::TYPE_FLUSH_IMAGE_CACHE:
+			case self::TYPE_REINDEX:
+				return self::GROUP_ADMIN;
+		}
+	}
+
+	/**
 	 * Set some defaults before saving an event to the database
 	 *
 	 * @return $this
@@ -233,8 +257,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 	{
 		$date = Mage::getModel('core/date');
 
-		$this->setTimestamp($date->timestamp())
-			 ->setUpdatedAt($date->date())
+		$this->setUpdatedAt($date->date())
 			 ->setVersion($this->getVersion()+1);
 
 		return $this;
