@@ -94,8 +94,6 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 			 ->setValue($value)
 			 ->setUnit($unit);
 
-		Mage::log('saving metric');
-
 		$this->save();
 	}
 
@@ -112,10 +110,7 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	 */
 	public function incrementMetric($key, $store, $type, $name, $description, $value, $unit)
 	{
-		Mage::log('incrementing metric');
 		$this->loadByKey($key, $store);
-
-		Mage::log('loaded '.$this->getId());
 
 		$this->updateMetric($key, $store, $type, $name, $description, ($this->getValue()+$value), $unit);
 	}
