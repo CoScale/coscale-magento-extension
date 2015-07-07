@@ -116,6 +116,24 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	}
 
 	/**
+	 * Return the textual version of the metric type
+	 *
+	 * @return string
+	 */
+	public function getTypeText()
+	{
+		switch($this->getType()) {
+			case self::TYPE_SERVER:
+					return 'S';
+				break;
+			case self::TYPE_APPLICATION:
+					return 'A';
+				break;
+
+		}
+	}
+
+	/**
 	 * Load a metric by it's key
 	 *
 	 * @param int $key   The predefined key to load the metric from

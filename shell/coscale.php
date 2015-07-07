@@ -26,7 +26,7 @@ class CoScale_Shell extends Mage_Shell_Abstract
 			                             'unit' => $metric->getUnit(),
 			                             'value' => $metric->getValue(),
 			                             'store_id' => $metric->getStoreId(),
-			                             'type' => $metric->getType());
+			                             'type' => $metric->getTypeText());
 		}
 
 		$output['events'] = array();
