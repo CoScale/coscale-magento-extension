@@ -47,12 +47,12 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	/**
 	 * Identifier for order amount average
 	 */
-	const KEY_ORDER_AVERAGE = 11;
+	const KEY_ORDER_AMOUNT_AVERAGE = 11;
 
 	/**
 	 * Identifier for order size average
 	 */
-	const KEY_ORDER_SIZE = 13;
+	const KEY_ORDER_SIZE_AVERAGE = 13;
 
 	/**
 	 * Identifier for the total number of customers in the system
@@ -161,8 +161,8 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
 	protected function getMetrics()
 	{
 		return array(self::KEY_ORDER_TOTAL,
-		             self::KEY_ORDER_AVERAGE,
-		             self::KEY_ORDER_SIZE,
+		             self::KEY_ORDER_AMOUNT_AVERAGE,
+		             self::KEY_ORDER_SIZE_AVERAGE,
 		             self::KEY_CUSTOMER_TOTAL);
 	}
 
