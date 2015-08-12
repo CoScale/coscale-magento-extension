@@ -24,8 +24,8 @@ class CoScale_Shell extends Mage_Shell_Abstract
 		foreach($collection as $metric) {
 			$output['metrics'][] = array('name' => $metric->getName(),
 			                             'unit' => $metric->getUnit(),
-			                             'value' => $metric->getValue(),
-			                             'store_id' => $metric->getStoreId(),
+			                             'value' => (float)$metric->getValue(),
+			                             'store_id' => (int)$metric->getStoreId(),
 			                             'type' => $metric->getTypeText());
 		}
 
@@ -37,10 +37,10 @@ class CoScale_Shell extends Mage_Shell_Abstract
 
 			$output['events'][] = array('type' => $event->getTypeGroup(),
 			                            'message' => $event->getName(),
-			                            'start_time' => (time()-$event->getTimestampStart()),
-			                            'stop_time' => ($event->getTimestampEnd() != 0 ? (time()-$event->getTimestampEnd()) : 0),
+			                            'start_time' => (int)((time()-$event->getTimestampStart()),
+			                            'stop_time' => (int)($event->getTimestampEnd() != 0 ? (time()-$event->getTimestampEnd()) : 0),
 			                            );
-
+			$event->delete();
 			if ($event->getState() != $event::STATE_ENABLED) {
 				//$event->delete();
 			}
@@ -53,7 +53,7 @@ class CoScale_Shell extends Mage_Shell_Abstract
 
 		$output['stores'] = array();
 		foreach(Mage::app()->getStores() as $store) {
-			$output['stores'][] = array('name' => $store->getName(), 'id' => $store->getId());
+			$output['stores'][] = array('name' => $store->getName(), 'id' => (int)$store->getId());
 		}
 
 		echo Zend_Json::encode($output);
