@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <CoScale_Monitor>
+            <active>true</active>
+            <codePool>community</codePool>
+        </CoScale_Monitor>
+    </modules>
+</config>

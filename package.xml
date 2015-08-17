@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+    <name>CoScale</name>
+    <version>0.4.0</version>
+    <stability>beta</stability>
+    <license>Commercial</license>
+    <channel>community</channel>
+    <extends/>
+    <summary>This module enables you to send important business and IT metrics from Magento to CoScale.</summary>
+    <description>The CoScale module exposes Magento events and metrics to the CoScale Agent. The metrics contain business metrics, such as the number of products, orders, abondoned carts, etc and technical metrics such as Magento caching metrics. The events contain magento admin actions such as page cache flushes, reindexing, etc.</description>
+    <notes>The CoScale module is currently in Beta</notes>
+    <authors><author><name>CoScale Developer</name><user>cs-dev</user><email>info@coscale.com</email></author></authors>
+    <date>2015-08-13</date>
+    <time>09:29:57</time>
+    <contents><target name="mage"><dir name="."><dir name="shell"><file name="coscale.php" hash="21491aab927822bf223d82aaa983152f"/></dir><dir name="app"><dir name="code"><dir name="community"><dir name="CoScale"><dir><dir name="Monitor"><dir name="Helper"><file name="Data.php" hash="2ac4602c841caeb7c891b570a9325202"/></dir><dir name="Model"><dir name="Event"><file name="Reindex.php" hash="fc2b7e0b8f8aa0bf3208379454e809d4"/><file name="Store.php" hash="ffcc2862403fea513497a046d249b79a"/></dir><file name="Event.php" hash="ad6e36e79f97974d612eeaf97b6290f0"/><dir name="Metric"><file name="Customer.php" hash="ef49982f04c3adc8309781bb28f94061"/><file name="Order.php" hash="b7bb66fbe6bfb37131442eb20f166ff8"/></dir><file name="Metric.php" hash="4402d45bf78d3c7056b7fa3051d4d63a"/><dir name="Resource"><dir name="Event"><file name="Collection.php" hash="c453260d207f96ac0a5dad963613eba1"/></dir><file name="Event.php" hash="e1e21a9628e6543a8f515dc18b17a3ce"/><dir name="Metric"><file name="Collection.php" hash="15330e6545ff9676d045c2ef2a0d89d2"/></dir><file name="Metric.php" hash="717209cce9b7eeea0a1eafb23e89f06d"/></dir></dir><dir name="etc"><file name="config.xml" hash="a05e32c27d7a2ca706ef18ba9dd72941"/></dir><dir name="sql"><dir name="coscale_monitor_setup"><file name="install-0.1.0.php" hash="826281beb53f1cf1bc9b4f20878ba76c"/><file name="upgrade-0.1.0-0.2.0.php" hash="4b35ebfa0fe233ad3a18d2fceff9c45d"/><file name="upgrade-0.2.0-0.3.0.php" hash="b3062edb2edb29b52a240c35c103999f"/><file name="upgrade-0.3.0-0.4.0.php" hash="853753835369b3967beba4160f0c535d"/></dir></dir></dir></dir></dir></dir></dir><dir name="etc"><dir name="modules"><file name="CoScale_Monitor.xml" hash="3aaf3341c82ee74aa76dbe6764b423f5"/></dir></dir></dir></dir></target></contents>
+    <compatible/>
+    <dependencies><required><php><min>5.4.0</min><max>6.0.0</max></php></required></dependencies>
+</package>
