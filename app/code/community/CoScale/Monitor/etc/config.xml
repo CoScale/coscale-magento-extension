@@ -2,7 +2,7 @@
 <config>
     <modules>
         <CoScale_Monitor>
-            <version>0.4.0</version>
+            <version>0.5.0</version>
         </CoScale_Monitor>
     </modules>
     <global>
@@ -57,6 +57,38 @@
                     </coscale_monitor_metric_customer_add>
                 </observers>
             </customer_save_after>
+            <catalog_category_save_after>
+                <observers>
+                    <coscale_monitor_metric_category_add>
+                        <class>coscale_monitor/metric_product</class>
+                        <method>addNewCategory</method>
+                    </coscale_monitor_metric_category_add>
+                </observers>
+            </catalog_category_save_after>
+            <catalog_category_delete_commit_after>
+                <observers>
+                    <coscale_monitor_metric_category_remove>
+                        <class>coscale_monitor/metric_product</class>
+                        <method>removeCategory</method>
+                    </coscale_monitor_metric_category_remove>
+                </observers>
+            </catalog_category_delete_commit_after>
+            <catalog_product_save_after>
+                <observers>
+                    <coscale_monitor_metric_product_add>
+                        <class>coscale_monitor/metric_product</class>
+                        <method>addNewProduct</method>
+                    </coscale_monitor_metric_product_add>
+                </observers>
+            </catalog_product_save_after>
+            <catalog_product_delete_commit_after>
+                <observers>
+                    <coscale_monitor_metric_product_remove>
+                        <class>coscale_monitor/metric_product</class>
+                        <method>removeProduct</method>
+                    </coscale_monitor_metric_product_remove>
+                </observers>
+            </catalog_product_delete_commit_after>
             <sales_order_place_after>
                 <observers>
                     <coscale_monitor_metric_order_add>
@@ -91,4 +123,17 @@
             </general>
         </coscale>
     </default>
+
+    <crontab>
+        <jobs>
+            <coscale_daily_cron>
+                <schedule>
+                    <cron_expr>0 0 * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>coscale_monitor/cronjobs::dailyCron</model>
+                </run>
+            </coscale_daily_cron>
+        </jobs>
+    </crontab>
 </config>

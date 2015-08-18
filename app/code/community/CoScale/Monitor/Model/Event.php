@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CoScale Event interaction model
  *
@@ -26,252 +27,252 @@
  * @method int getTimestampEnd()
  * @method int getDuration()
  * @method string getUpdatedAt()
- */ 
+ */
 class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
 {
-	/**
-	 * Disabled state for events
-	 */
-	const STATE_DISABLED = -1;
+    /**
+     * Disabled state for events
+     */
+    const STATE_DISABLED = -1;
 
-	/**
-	 * Inactive state for events
-	 */
-	const STATE_INACTIVE = 0;
+    /**
+     * Inactive state for events
+     */
+    const STATE_INACTIVE = 0;
 
-	/**
-	 * Enabled/active state for events
-	 */
-	const STATE_ENABLED = 1;
+    /**
+     * Enabled/active state for events
+     */
+    const STATE_ENABLED = 1;
 
-	const GROUP_ADMIN = 'Admin actions';
+    const GROUP_ADMIN = 'Admin actions';
 
-	/**
-	 * Event type for adding stores
-	 */
-	const TYPE_STORE_ADD = 'STORE_ADD';
+    /**
+     * Event type for adding stores
+     */
+    const TYPE_STORE_ADD = 'STORE_ADD';
 
-	/**
-	 * Event type for flushing the page cache
-	 */
-	const TYPE_FLUSH_PAGE_CACHE = 'FLUSH_PAGE_CACHE';
+    /**
+     * Event type for flushing the page cache
+     */
+    const TYPE_FLUSH_PAGE_CACHE = 'FLUSH_PAGE_CACHE';
 
-	/**
-	 * Event for flushing the asset cache
-	 */
-	const TYPE_FLUSH_ASSET_CACHE = 'FLUSH_ASSET_CACHE';
+    /**
+     * Event for flushing the asset cache
+     */
+    const TYPE_FLUSH_ASSET_CACHE = 'FLUSH_ASSET_CACHE';
 
-	/**
-	 * Event for flushing the image cache
-	 */
-	const TYPE_FLUSH_IMAGE_CACHE = 'FLUSH_IMAGE_CACHE';
+    /**
+     * Event for flushing the image cache
+     */
+    const TYPE_FLUSH_IMAGE_CACHE = 'FLUSH_IMAGE_CACHE';
 
-	/**
-	 * Event for the reindexing
-	 */
-	const TYPE_REINDEX = 'REINDEX';
+    /**
+     * Event for the reindexing
+     */
+    const TYPE_REINDEX = 'REINDEX';
 
-	/**
-	 * Construct the event model
-	 */
+    /**
+     * Construct the event model
+     */
     protected function _construct()
     {
         $this->_init('coscale_monitor/event');
     }
 
-	/**
-	 * Make sure the version is always an integer, even when it's null
-	 *
-	 * @return int
-	 */
-	public function getVersion()
-	{
-		if (is_null($this->getData('version'))) {
-			return 0;
-		}
+    /**
+     * Make sure the version is always an integer, even when it's null
+     *
+     * @return int
+     */
+    public function getVersion()
+    {
+        if (is_null($this->getData('version'))) {
+            return 0;
+        }
 
-		return $this->getData('version');
-	}
+        return $this->getData('version');
+    }
 
-	/**
-	 * Return the event data as an array, rather than the json string
-	 *
-	 * @return array
-	 */
-	public function getEventData()
-	{
-		return json_decode($this->getData('event_data'), true);
-	}
+    /**
+     * Return the event data as an array, rather than the json string
+     *
+     * @return array
+     */
+    public function getEventData()
+    {
+        return json_decode($this->getData('event_data'), true);
+    }
 
-	/**
-	 * Set the state for an event
-	 *
-	 * @param int $state Set the state to one of the predefined states in the system
-	 *
-	 * @return $this
-	 * @throws Exception
-	 */
-	public function setState($state)
-	{
-		if ( ! in_array($state, array(self::STATE_DISABLED, self::STATE_ENABLED, self::STATE_INACTIVE))) {
-			throw new Exception('State must be one of the predefined state levels.');
-		}
+    /**
+     * Set the state for an event
+     *
+     * @param int $state Set the state to one of the predefined states in the system
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setState($state)
+    {
+        if (!in_array($state, array(self::STATE_DISABLED, self::STATE_ENABLED, self::STATE_INACTIVE))) {
+            throw new Exception('State must be one of the predefined state levels.');
+        }
 
-		return $this->setData('state', $state);
-	}
+        return $this->setData('state', $state);
+    }
 
-	/**
-	 * Set the event type
-	 *
-	 * @param string $type Set the type of the event to one of the predefined types
-	 *
-	 * @return $this
-	 *
-	 * @throws Exception
-	 */
-	public function setType($type)
-	{
-		if ( ! in_array($type, $this->getTypes())) {
-			throw new Exception('Only predefined types can be used.');
-		}
+    /**
+     * Set the event type
+     *
+     * @param string $type Set the type of the event to one of the predefined types
+     *
+     * @return $this
+     *
+     * @throws Exception
+     */
+    public function setType($type)
+    {
+        if (!in_array($type, $this->getTypes())) {
+            throw new Exception('Only predefined types can be used.');
+        }
 
-		return $this->setData('type', $type);
-	}
+        return $this->setData('type', $type);
+    }
 
-	/**
-	 * Store the event data as a json string rather than a raw array
-	 *
-	 * @param array $data An array of data to expose to CoScale
-	 *
-	 * @return $this
-	 */
-	public function setEventData(array $data)
-	{
-		return $this->setData('event_data', json_encode($data));
-	}
+    /**
+     * Store the event data as a json string rather than a raw array
+     *
+     * @param array $data An array of data to expose to CoScale
+     *
+     * @return $this
+     */
+    public function setEventData(array $data)
+    {
+        return $this->setData('event_data', json_encode($data));
+    }
 
-	/**
-	 * Shorthand for adding new events
-	 *
-	 * @param string $type        The event type as predefined in this model
-	 * @param string $name        Short name for the event
-	 * @param string $description Description of the event
-	 * @param array  $data        An array of data to expose to CoScale
-	 * @param string $source      The causer of the event, logged in user, etc
-	 * @param int    $state       The state of the event
-	 *
-	 * @return $this
-	 */
-	public function addEvent($type, $name, $description, array $data, $source, $state = null)
-	{
-		$this->setType($type)
-		     ->setName($name)
-		     ->setDescription($description)
-		     ->setEventData($data)
-			 ->setDuration(0)
-			 ->setTimestampStart(time())
-		     ->setSource($source)
-			 ->setState($state);
+    /**
+     * Shorthand for adding new events
+     *
+     * @param string $type The event type as predefined in this model
+     * @param string $name Short name for the event
+     * @param string $description Description of the event
+     * @param array $data An array of data to expose to CoScale
+     * @param string $source The causer of the event, logged in user, etc
+     * @param int $state The state of the event
+     *
+     * @return $this
+     */
+    public function addEvent($type, $name, $description, array $data, $source, $state = null)
+    {
+        $this->setType($type)
+            ->setName($name)
+            ->setDescription($description)
+            ->setEventData($data)
+            ->setDuration(0)
+            ->setTimestampStart(time())
+            ->setSource($source)
+            ->setState($state);
 
-		// By default we're assuming events don't do much and we're simply logging them
-		// if an event takes longer, the enabled state needs to be defined in the call
-		if (is_null($state)) {
-			$this->setState(self::STATE_INACTIVE)
-				 ->setTimestampEnd(time());
-		}
+        // By default we're assuming events don't do much and we're simply logging them
+        // if an event takes longer, the enabled state needs to be defined in the call
+        if (is_null($state)) {
+            $this->setState(self::STATE_INACTIVE)
+                ->setTimestampEnd(time());
+        }
 
-		$this->save();
+        $this->save();
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Shorthand to update an event
-	 *
-	 * @param string $type The predefined type to load the event by
-	 * @param int $state The state of the event
-	 * @param string $source Source of the event, who triggered it
-	 * @param array $data Event data to store
-	 *
-	 * @throws Exception
-	 */
-	public function updateEvent($type, $state, $source = null, array $data = array())
-	{
-		$this->loadLastByType($type);
-		$this->setTimestampEnd(time())
-			 ->setState($state);
+    /**
+     * Shorthand to update an event
+     *
+     * @param string $type The predefined type to load the event by
+     * @param int $state The state of the event
+     * @param string $source Source of the event, who triggered it
+     * @param array $data Event data to store
+     *
+     * @throws Exception
+     */
+    public function updateEvent($type, $state, $source = null, array $data = array())
+    {
+        $this->loadLastByType($type);
+        $this->setTimestampEnd(time())
+            ->setState($state);
 
-		if ( ! is_null($source)) {
-			$this->setSource($source);
-		}
+        if (!is_null($source)) {
+            $this->setSource($source);
+        }
 
-		if ( ! is_null($data)) {
-			$this->setEventData($data);
-		}
+        if (!is_null($data)) {
+            $this->setEventData($data);
+        }
 
-		$this->save();
-	}
+        $this->save();
+    }
 
-	/**
-	 * Load an event by it's type
-	 *
-	 * @param string $type The predefined type to load the event by
-	 *
-	 * @return $this
-	 *
-	 * @throws Exception
-	 */
-	public function loadLastByType($type)
-	{
-		if ( ! in_array($type, $this->getTypes())) {
-			throw new Exception('Type should be one of the predefined keys');
-		}
+    /**
+     * Load an event by it's type
+     *
+     * @param string $type The predefined type to load the event by
+     *
+     * @return $this
+     *
+     * @throws Exception
+     */
+    public function loadLastByType($type)
+    {
+        if (!in_array($type, $this->getTypes())) {
+            throw new Exception('Type should be one of the predefined keys');
+        }
 
-		$this->_getResource()->loadByType($this, $type);
-		return $this;
-	}
+        $this->_getResource()->loadByType($this, $type);
+        return $this;
+    }
 
-	/**
-	 * Type groups for the reporting and grouping of types
-	 *
-	 * @return string
-	 */
-	public function getTypeGroup()
-	{
-		switch($this->getType()) {
-			case self::TYPE_STORE_ADD:
-			case self::TYPE_FLUSH_PAGE_CACHE:
-			case self::TYPE_FLUSH_ASSET_CACHE:
-			case self::TYPE_FLUSH_IMAGE_CACHE:
-			case self::TYPE_REINDEX:
-				return self::GROUP_ADMIN;
-		}
-	}
+    /**
+     * Type groups for the reporting and grouping of types
+     *
+     * @return string
+     */
+    public function getTypeGroup()
+    {
+        switch ($this->getType()) {
+            case self::TYPE_STORE_ADD:
+            case self::TYPE_FLUSH_PAGE_CACHE:
+            case self::TYPE_FLUSH_ASSET_CACHE:
+            case self::TYPE_FLUSH_IMAGE_CACHE:
+            case self::TYPE_REINDEX:
+                return self::GROUP_ADMIN;
+        }
+    }
 
-	/**
-	 * Set some defaults before saving an event to the database
-	 *
-	 * @return $this
-	 */
-	protected function _beforeSave()
-	{
-		$date = Mage::getModel('core/date');
+    /**
+     * Set some defaults before saving an event to the database
+     *
+     * @return $this
+     */
+    protected function _beforeSave()
+    {
+        $date = Mage::getModel('core/date');
 
-		$this->setUpdatedAt($date->date())
-			 ->setVersion($this->getVersion()+1);
+        $this->setUpdatedAt($date->date())
+            ->setVersion($this->getVersion() + 1);
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Retrieve the available types as an array
-	 *
-	 * @return array
-	 */
-	protected function getTypes()
-	{
-		return array(self::TYPE_REINDEX, self::TYPE_STORE_ADD,
-		             self::TYPE_FLUSH_ASSET_CACHE, self::TYPE_FLUSH_IMAGE_CACHE,
-		             self::TYPE_FLUSH_PAGE_CACHE);
-	}
+    /**
+     * Retrieve the available types as an array
+     *
+     * @return array
+     */
+    protected function getTypes()
+    {
+        return array(self::TYPE_REINDEX, self::TYPE_STORE_ADD,
+            self::TYPE_FLUSH_ASSET_CACHE, self::TYPE_FLUSH_IMAGE_CACHE,
+            self::TYPE_FLUSH_PAGE_CACHE);
+    }
 }
