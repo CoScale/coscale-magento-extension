@@ -18,8 +18,6 @@ class CoScale_Shell extends Mage_Shell_Abstract
     public function run()
     {
         $output['metrics'] = array();
-        Mage::getSingleton('coscale_monitor/metric_product')->dailyCron();
-        die();
 
         $collection = Mage::getModel('coscale_monitor/metric')->getCollection();
         /** @var CoScale_Monitor_Model_Metric $metric */
@@ -76,6 +74,20 @@ class CoScale_Shell extends Mage_Shell_Abstract
             }
         }
 
+        $endDateTime = date('U');//Mage::getModel('core/date')->timestamp(time()); // Current timestamp - 65 seconds
+        $collection = Mage::getModel('cron/schedule')->getCollection()
+            ->addFieldToFilter('finished_at', array('from' => date('Y-m-d H:i:s', $endDateTime-65)))
+            ->setOrder('finished_at', 'DESC');
+        /** @var Mage_Cron_Model_Schedule $event */
+        foreach ($collection as $cron) {
+            $output['events'][] = array(
+                'type' => CoScale_Monitor_Model_Event::GROUP_CRON,
+                'message' => $cron->getJobCode(),
+                'status' => $cron->getStatus(),
+                'start_time' => (int)strtotime($cron->getExecutedAt()),
+                'stop_time' => (int)strtotime($cron->getFinishedAt()),
+            );
+        }
         $output['modules'] = array();
         $output['modules'][] = array('name' => 'core', 'version' => (string)Mage::getVersion());
         foreach (Mage::getConfig()->getNode('modules')->children() as $module) {

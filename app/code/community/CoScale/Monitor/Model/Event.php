@@ -46,6 +46,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
     const STATE_ENABLED = 1;
 
     const GROUP_ADMIN = 'Admin actions';
+    const GROUP_CRON = 'Cron Jobs';
 
     /**
      * Event type for adding stores
