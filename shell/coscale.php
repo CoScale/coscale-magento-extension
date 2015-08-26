@@ -40,10 +40,16 @@ class CoScale_Shell extends Mage_Shell_Abstract
         $output['metrics'][] = Mage::getSingleton('coscale_monitor/metric_file')->getErrorReports();
 
         // Log file details
-        $output['metrics'][] = Mage::getSingleton('coscale_monitor/metric_file')->getLogFiles();
+        $logFiles = Mage::getSingleton('coscale_monitor/metric_file')->getLogFiles();
+        foreach ($logFiles as $data) {
+            $output['metrics'][] = $data;
+        }
 
         // URL Rewrite details
-        $output['metrics'][] = Mage::getSingleton('coscale_monitor/metric_rewrite')->getUrlRewrites();
+        $urlRewrites = Mage::getSingleton('coscale_monitor/metric_rewrite')->getUrlRewrites();
+        foreach ($urlRewrites as $data) {
+            $output['metrics'][] = $data;
+        }
 
         // Email queue size
         $output['metrics'][] = Mage::getSingleton('coscale_monitor/metric_order')->getEmailQueueSize();
