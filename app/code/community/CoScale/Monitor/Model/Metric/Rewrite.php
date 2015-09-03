@@ -27,8 +27,8 @@ class CoScale_Monitor_Model_Metric_Rewrite extends CoScale_Monitor_Model_Metric_
             $output[] = array(
                 'name' => 'URL Rewrites',
                 'unit' => 'rewrites',
-                'value' => $rewrite->getCount(),
-                'store_id' => $rewrite->getStoreId(),
+                'value' => (float)$rewrite->getCount(),
+                'store_id' => (int)$rewrite->getStoreId(),
                 'type' => 'A'
             );
         }
