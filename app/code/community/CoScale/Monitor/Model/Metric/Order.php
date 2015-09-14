@@ -351,7 +351,10 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             return array();
         }
         $collection = Mage::getResourceModel('core/email_queue_collection');
-
+        if(!is_object($collection))
+        {
+        	return array();
+        }
         return array(
             'name' => 'Amount of messages in the e-mail queue',
             'unit' => 'messages',
