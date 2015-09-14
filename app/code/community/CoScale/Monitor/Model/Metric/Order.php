@@ -8,65 +8,357 @@
  * @version 1.0
  * @created 2015-07-07
  */
-class CoScale_Monitor_Model_Metric_Order
+class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Abstract
 {
-	/**
-	 * Observe the adding of new orders to the system
-	 *
-	 * @param Varien_Event_Observer $observer
-	 */
-	public function addNew(Varien_Event_Observer $observer)
-	{
-		/** @var Mage_Sales_Model_Order $order */
-		$order = $observer->getEvent()->getOrder();
 
-		// not too please about this bit, I'd rather we store the totals in the metric
-		// table as well and retrieve them if we need them, it's much cheaper to do it
-		// that way but I ran into an issue with the metrics table being a MEMORY table
-		// and not being able to depend on it for persistent storage and updates.
-		$orders = Mage::getResourceModel('sales/order_collection')->addAttributeToFilter('store_id', $order->getStoreId());
+    /**
+     * Identifier for total orders
+     */
+    const KEY_ORDER_TOTAL = 2000;
+    const KEY_ORDER_TOTAL_TODAY = 2001;
 
-		// adjust the collection query a bit, removing the existing columns from the select and adding our
-		// aggregate's in its place.
-		$orders->getSelect()
-			->reset('columns')
-			->columns(array('total' => 'SUM(main_table.base_grand_total)',
-		                    'items' => 'SUM(main_table.total_item_count)',
-		                    'orders' => 'COUNT(*)'));
+    /**
+     * Identifier for order amount average and total
+     */
+    const KEY_ORDER_AMOUNT_AVERAGE = 2010;
+    const KEY_ORDER_SIZE_TOTAL = 2011;
 
-		// make sure we got data back to work with and then update the metrics
-		$data = $orders->getData();
-		if (is_array($data) && isset($data[0]) && isset($data[0]['total'])) {
+    /**
+     * Identifier for order size average and total
+     */
+    const KEY_ORDER_SIZE_AVERAGE = 2020;
+    const KEY_ORDER_AMOUNT_TOTAL = 2021;
 
-			$orderAverageSize = Mage::getModel('coscale_monitor/metric');
-			$orderAverageSize->updateMetric(
-				$orderAverageSize::KEY_ORDER_SIZE_AVERAGE,
-				$order->getStoreId(),
-				$orderAverageSize::TYPE_APPLICATION,
-				'Order size average',
-				'The average size of an order in the system for this store',
-				$data[0]['items'],
-				'orders');
+    /**
+     * Identifier for order state processing/completed
+     */
+    const KEY_ORDER_STATE_NEW = 2030;
+    const KEY_ORDER_STATE_PROCESSING = 2031;
+    const KEY_ORDER_STATE_COMPLETED = 2032;
 
-			$orderAverageAmount = Mage::getModel('coscale_monitor/metric');
-			$orderAverageAmount->updateMetric(
-				$orderAverageAmount::KEY_ORDER_AMOUNT_AVERAGE,
-				$order->getStoreId(),
-				$orderAverageAmount::TYPE_APPLICATION,
-				'Order amount average',
-				'The average amount of an order in the system for this store',
-				$data[0]['total'],
-				'€');
+    /**
+     * Public contructor function
+     */
+    public function _contruct()
+    {
+        $this->_metricData[self::KEY_ORDER_SIZE_TOTAL] = array(
+            'name' => 'Order size total',
+            'description' => 'The total size of all order in the system for this store',
+            'unit' => 'items'
+        );
 
-			$orderTotal = Mage::getModel('coscale_monitor/metric');
-			$orderTotal->updateMetric(
-				$orderTotal::KEY_ORDER_TOTAL,
-				$order->getStoreId(),
-				$orderTotal::TYPE_APPLICATION,
-				'Total orders',
-				'The total number of orders in the system for this store',
-				$data[0]['orders'],
-				'orders');
-		}
-	}
+        $this->_metricData[self::KEY_ORDER_SIZE_AVERAGE] = array(
+            'name' => 'Order size average',
+            'description' => 'The average size of an order in the system for this store',
+            'unit' => 'items'
+        );
+
+        $this->_metricData[self::KEY_ORDER_AMOUNT_TOTAL] = array(
+            'name' => 'Order amount total',
+            'description' => 'The total amount of an order in the system for this store',
+            'unit' => 'Amount'
+        );
+
+        $this->_metricData[self::KEY_ORDER_AMOUNT_AVERAGE] = array(
+            'name' => 'Order amount average',
+            'description' => 'The average amount of an order in the system for this store',
+            'unit' => 'Amount'
+        );
+
+        $this->_metricData[self::KEY_ORDER_TOTAL] = array(
+            'name' => 'Total orders',
+            'description' => 'The total number of orders in the system for this store',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_ORDER_TOTAL_TODAY] = array(
+            'name' => 'Total orders today',
+            'description' => 'The total number of orders in the system for this store placed today',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_ORDER_STATE_NEW] = array(
+            'name' => 'Total orders new ',
+            'description' => 'The total number of orders in new state',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_ORDER_STATE_PROCESSING] = array(
+            'name' => 'Total orders processing ',
+            'description' => 'The total number of orders in processing state',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_ORDER_STATE_COMPLETED] = array(
+            'name' => 'Total orders completed',
+            'description' => 'The total number of orders in completed state',
+            'unit' => 'orders'
+        );
+
+    }
+
+    /**
+     * Observe the adding of new orders to the system
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function addNew(Varien_Event_Observer $observer)
+    {
+        /** @var Mage_Sales_Model_Order $order */
+        $order = $observer->getEvent()->getOrder();
+
+        $this->setMetric(
+            self::ACTION_INCREMENT,
+            self::KEY_ORDER_SIZE_TOTAL,
+            $order->getStoreId(),
+            $order->getTotalItemCount()
+        );
+
+        $this->setMetric(
+            self::ACTION_INCREMENT,
+            self::KEY_ORDER_AMOUNT_TOTAL,
+            $order->getStoreId(),
+            $order->getBaseGrandTotal()
+        );
+
+        $this->setMetric(
+            self::ACTION_INCREMENT,
+            self::KEY_ORDER_TOTAL,
+            $order->getStoreId(),
+            1
+        );
+
+        $this->setMetric(
+            self::ACTION_INCREMENT,
+            self::KEY_ORDER_TOTAL_TODAY,
+            $order->getStoreId(),
+            1
+        );
+
+        // Update state statistics (only is changed)
+        if ($order->getState() != $order->getOrigData('state')) {
+            // Decrease order processing when previous state was processing
+            if ($order->getOrigData('state') == 'new') {
+                $this->setMetric(
+                    self::ACTION_INCREMENT,
+                    self::KEY_ORDER_STATE_NEW,
+                    $order->getStoreId(),
+                    -1
+                );
+            }
+            // Decrease order processing when previous state was processing
+            if ($order->getOrigData('state') == 'processing') {
+                $this->setMetric(
+                    self::ACTION_INCREMENT,
+                    self::KEY_ORDER_STATE_PROCESSING,
+                    $order->getStoreId(),
+                    -1
+                );
+            }
+
+            // Increase orders with the state new
+            if ($order->getState() == 'new') {
+                $this->setMetric(
+                    self::ACTION_INCREMENT,
+                    self::KEY_ORDER_STATE_NEW,
+                    $order->getStoreId(),
+                    1
+                );
+            }
+            // Increase orders with the state processing
+            if ($order->getState() == 'processing') {
+                $this->setMetric(
+                    self::ACTION_INCREMENT,
+                    self::KEY_ORDER_STATE_PROCESSING,
+                    $order->getStoreId(),
+                    1
+                );
+            }
+            // Increase orders with the state complete
+            if ($order->getState() == 'complete') {
+                $this->setMetric(
+                    self::ACTION_INCREMENT,
+                    self::KEY_ORDER_STATE_COMPLETED,
+                    $order->getStoreId(),
+                    1
+                );
+            }
+        }
+
+        $this->updateAvgOrderValues($order->getStoreId());
+    }
+
+    /**
+     * Update Avarage values for order details
+     *
+     * @param $storeId
+     */
+    public function updateAvgOrderValues($storeId)
+    {
+        $orderTotal = $this->getMetric(self::KEY_ORDER_TOTAL, $storeId);
+        $orderItems = $this->getMetric(self::KEY_ORDER_SIZE_TOTAL, $storeId);
+        $orderAmount = $this->getMetric(self::KEY_ORDER_AMOUNT_TOTAL, $storeId);
+
+
+        $this->setMetric(
+            self::ACTION_UPDATE,
+            self::KEY_ORDER_SIZE_AVERAGE,
+            $storeId,
+            ($orderItems/$orderTotal)
+        );
+
+        $this->setMetric(
+            self::ACTION_UPDATE,
+            self::KEY_ORDER_AMOUNT_AVERAGE,
+            $storeId,
+            ($orderAmount/$orderTotal)
+        );
+    }
+
+
+    public function initOrderData()
+    {
+        $collection = Mage::getResourceModel('sales/order_collection');
+        $collection->getSelect()
+            ->reset('columns')
+            ->columns(array('amount' => 'SUM(main_table.base_grand_total)',
+                'items' => 'SUM(main_table.total_item_count)',
+                'store_id' => 'main_table.store_id',
+                'state' => 'main_table.state',
+                'count' => 'COUNT(*)'))
+            ->group(array('main_table.store_id','main_table.state'));
+
+        $data = array();
+        foreach ($collection as $order) {
+            if (!$order->getStoreId()) {
+                continue;
+            }
+            if (!isset($data[$order->getStoreId()])) {
+                $data[$order->getStoreId()] = array(
+                    'items' => 0,
+                    'amount' => 0,
+                    'count' => 0,
+                    'new' => 0,
+                    'processing' => 0,
+                    'complete' => 0
+                );
+            }
+            $data[$order->getStoreId()]['items'] += $order->getItems();
+            $data[$order->getStoreId()]['amount'] += $order->getAmount();
+            $data[$order->getStoreId()]['count'] += $order->getCount();
+            if ($order->getState() == 'new') {
+                $data[$order->getStoreId()]['new'] += $order->getCount();
+            }
+
+            if ($order->getState() == 'processing') {
+                $data[$order->getStoreId()]['processing'] += $order->getCount();
+            }
+
+            if ($order->getState() == 'complete') {
+                $data[$order->getStoreId()]['complete'] += $order->getCount();
+            }
+        }
+
+        foreach ($data as $storeId => $details) {
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_SIZE_TOTAL,
+                $storeId,
+                $details['items']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_AMOUNT_TOTAL,
+                $storeId,
+                $details['amount']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_TOTAL,
+                $storeId,
+                $details['count']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_NEW,
+                $storeId,
+                $details['new']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_PROCESSING,
+                $storeId,
+                $details['processing']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_COMPLETED,
+                $storeId,
+                $details['complete']
+            );
+
+            $this->updateAvgOrderValues($storeId);
+        }
+    }
+
+    /**
+     * Get Abandonned cart amounts
+     * @return array
+     */
+    public function getAbandonnedCarts()
+    {
+        /** @var $collection Mage_Reports_Model_Resource_Quote_Collection */
+        $collection = Mage::getResourceModel('reports/quote_collection');
+        $collection->prepareForAbandonedReport(array());
+        $collection->getSelect()
+            ->columns(array('store_id' => 'main_table.store_id',
+                'count' => 'COUNT(*)'))
+            ->group('main_table.store_id');
+        $output = array();
+        foreach ($collection as $order) {
+            $output[] = array(
+                'name' => 'Abandonned carts',
+                'unit' => 'orders',
+                'value' => (float)$order->getCount(),
+                'store_id' => (int)$order->getStoreId(),
+                'type' => 'A'
+            );
+        }
+        return $output;
+    }
+
+    public function getEmailQueueSize()
+    {
+        $edition = method_exists('Mage', 'getEdition') ? Mage::getEdition():false;
+
+        // Pre CE1.7 version => No e-mail queue available
+        if (!$edition) {
+            return array();
+        }
+
+        // Pre CE 1.9 version => No e-mail queue available
+        if ($edition == 'Community' && version_compare(Mage::getVersion(), '1.9', '<')) {
+            return array();
+        }
+
+        // Pre EE 1.14 version => No e-mail queue available
+        if ($edition == 'Enterprise' && version_compare(Mage::getVersion(), '1.14', '<')) {
+            return array();
+        }
+        $collection = Mage::getResourceModel('core/email_queue_collection');
+
+        return array(
+            'name' => 'Amount of messages in the e-mail queue',
+            'unit' => 'messages',
+            'value' => $collection->getSize(),
+            'store_id' => 0,
+            'type' => 'A'
+        );
+    }
+
 }
