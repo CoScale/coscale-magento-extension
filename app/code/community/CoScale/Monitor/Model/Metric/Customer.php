@@ -96,6 +96,10 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
     public function updateTotalCount()
     {
         $collection = Mage::getResourceModel('customer/customer_collection');
+        if(!is_object($collection))
+        {
+        	return;
+        }
         $collection->getSelect()
             ->reset('columns')
             ->columns(array('website_id' => 'e.website_id',

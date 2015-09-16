@@ -174,7 +174,10 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
     public function updateTotalCount()
     {
         $collection = Mage::getResourceModel('catalog/product_collection');
-
+        if(!is_object($collection))
+        {
+        	return;
+        }
         $this->setMetric(
             self::ACTION_UPDATE,
             self::KEY_PRODUCT_TOTAL,
@@ -183,7 +186,10 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
         );
 
         $collection = Mage::getResourceModel('catalog/category_collection');
-
+        if(!is_object($collection))
+        {
+        	return;
+        }
         $this->setMetric(
             self::ACTION_UPDATE,
             self::KEY_CATEGORIES_TOTAL,

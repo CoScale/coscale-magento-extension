@@ -219,6 +219,10 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     public function initOrderData()
     {
         $collection = Mage::getResourceModel('sales/order_collection');
+        if(!is_object($collection))
+        {
+        	return;
+        }
         $collection->getSelect()
             ->reset('columns')
             ->columns(array('amount' => 'SUM(main_table.base_grand_total)',
@@ -314,6 +318,10 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     {
         /** @var $collection Mage_Reports_Model_Resource_Quote_Collection */
         $collection = Mage::getResourceModel('reports/quote_collection');
+        if(!is_object($collection))
+        {
+        	return array();
+        }
         $collection->prepareForAbandonedReport(array());
         $collection->getSelect()
             ->columns(array('store_id' => 'main_table.store_id',
