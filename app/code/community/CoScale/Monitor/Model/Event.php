@@ -56,7 +56,9 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
     /**
      * Event type for flushing the page cache
      */
-    const TYPE_FLUSH_PAGE_CACHE = 'FLUSH_PAGE_CACHE';
+    const TYPE_FLUSH_SYSTEM_CACHE = 'FLUSH_SYSTEM_CACHE';
+    const TYPE_FLUSH_ALL_CACHE = 'FLUSH_ALL_CACHE';
+    const TYPE_MASS_REFRESH_CACHE = 'MASS_REFRESH_CACHE';
 
     /**
      * Event for flushing the asset cache
@@ -169,7 +171,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
         $this->setType($type)
             ->setName($name)
             ->setDescription($description)
-            ->setEventData($data)
+            ->setEventData(serialize($data))
             ->setDuration(0)
             ->setTimestampStart(time())
             ->setSource($source)
@@ -197,7 +199,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
      *
      * @throws Exception
      */
-    public function updateEvent($type, $state, $source = null, array $data = array())
+    public function updateEvent($type, $state, $source = null, array $data = null)
     {
         $this->loadLastByType($type);
         $this->setTimestampEnd(time())
@@ -242,9 +244,11 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
     {
         switch ($this->getType()) {
             case self::TYPE_STORE_ADD:
-            case self::TYPE_FLUSH_PAGE_CACHE:
+            case self::TYPE_MASS_REFRESH_CACHE:
             case self::TYPE_FLUSH_ASSET_CACHE:
             case self::TYPE_FLUSH_IMAGE_CACHE:
+            case self::TYPE_FLUSH_SYSTEM_CACHE:
+            case self::TYPE_FLUSH_ALL_CACHE:
             case self::TYPE_REINDEX:
                 return self::GROUP_ADMIN;
         }
@@ -274,6 +278,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
     {
         return array(self::TYPE_REINDEX, self::TYPE_STORE_ADD,
             self::TYPE_FLUSH_ASSET_CACHE, self::TYPE_FLUSH_IMAGE_CACHE,
-            self::TYPE_FLUSH_PAGE_CACHE);
+            self::TYPE_MASS_REFRESH_CACHE, self::TYPE_FLUSH_SYSTEM_CACHE,
+            self::TYPE_FLUSH_ALL_CACHE);
     }
 }

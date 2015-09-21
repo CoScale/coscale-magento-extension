@@ -54,14 +54,14 @@ class CoScale_Shell extends Mage_Shell_Abstract
         // Email queue size
         $emailQueueSize = Mage::getSingleton('coscale_monitor/metric_order')->getEmailQueueSize();
         foreach ($emailQueueSize as $data) {
-        	$output['metrics'][] = $data;
+            $output['metrics'][] = $data;
         }
 
         $output['events'] = array();
 
         if (file_exists(Mage::getBaseDir('base') . DS . 'maintenance.flag')) {
             $output['events'][] = array(
-                'type' => 'maintenance mode',
+                'type' => CoScale_Monitor_Model_Event::GROUP_ADMIN,
                 'message' => 'Maintenance mode enabled',
                 'start_time' => 0,
                 'stop_time' => 0,
@@ -73,7 +73,8 @@ class CoScale_Shell extends Mage_Shell_Abstract
         foreach ($collection as $event) {
             $output['events'][] = array(
                 'type' => $event->getTypeGroup(),
-                'message' => $event->getName(),
+                'message' => $event->getDescription(),
+                'data' => array_merge(array('originator'=>$event->getSource()), unserialize($event->getEventData())),
                 'start_time' => (int)(time() - $event->getTimestampStart()),
                 'stop_time' => (int)($event->getTimestampEnd() != 0 ? (time() - $event->getTimestampEnd()) : 0),
             );
@@ -83,7 +84,7 @@ class CoScale_Shell extends Mage_Shell_Abstract
             }
         }
 
-        $endDateTime = date('U');//Mage::getModel('core/date')->timestamp(time()); // Current timestamp - 65 seconds
+        $endDateTime = date('U');
         $collection = Mage::getModel('cron/schedule')->getCollection()
             ->addFieldToFilter('finished_at', array('from' => date('Y-m-d H:i:s', $endDateTime-65)))
             ->setOrder('finished_at', 'DESC');
@@ -93,8 +94,8 @@ class CoScale_Shell extends Mage_Shell_Abstract
                 'type' => CoScale_Monitor_Model_Event::GROUP_CRON,
                 'message' => $cron->getJobCode(),
                 'status' => $cron->getStatus(),
-                'start_time' => (int)strtotime($cron->getExecutedAt()),
-                'stop_time' => (int)strtotime($cron->getFinishedAt()),
+                'start_time' => (int)(time() - strtotime($cron->getExecutedAt())),
+                'stop_time' => (int)(time() - strtotime($cron->getFinishedAt())),
             );
         }
         $output['modules'] = array();
