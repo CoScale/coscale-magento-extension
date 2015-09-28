@@ -46,7 +46,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      */
     public function _contruct()
     {
-        $this->_metricData[self::KEY_ORDER_SIZE_TOTAL_NEW] = array( // TODO REMOVE
+        $this->_metricData[self::KEY_ORDER_SIZE_TOTAL_NEW] = array(
             'name' => 'New Order size total',
             'description' => 'The total size of orders since last collect for this store',
             'unit' => 'items'
