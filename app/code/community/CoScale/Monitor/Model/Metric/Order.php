@@ -438,13 +438,12 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         if (!is_object($collection)) {
             return array();
         }
-        return array(
+        return array(array(
             'name' => 'Amount of messages in the e-mail queue',
             'unit' => 'messages',
             'value' => $collection->getSize(),
             'store_id' => 0,
             'type' => 'A'
-        );
+        ));
     }
-
 }
