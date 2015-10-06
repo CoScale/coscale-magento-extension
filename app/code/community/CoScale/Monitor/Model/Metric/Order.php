@@ -152,6 +152,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         /** @var Mage_Sales_Model_Order $order */
         $order = $observer->getEvent()->getOrder();
 
+        $amountUnit = Mage::getStoreConfig('currency/options/base', $order->getStoreId());
+
         $this->setMetric(
             self::ACTION_INCREMENT,
             self::KEY_ORDER_SIZE_TOTAL,
@@ -163,7 +165,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::ACTION_INCREMENT,
             self::KEY_ORDER_AMOUNT_TOTAL,
             $order->getStoreId(),
-            $order->getBaseGrandTotal()
+            $order->getBaseGrandTotal(),
+            $amountUnit
         );
 
         $this->setMetric(
@@ -184,7 +187,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::ACTION_INCREMENT,
             self::KEY_ORDER_AMOUNT_TOTAL_NEW,
             $order->getStoreId(),
-            $order->getBaseGrandTotal()
+            $order->getBaseGrandTotal(),
+            $amountUnit
         );
 
         $this->setMetric(
@@ -254,6 +258,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      */
     public function updateAvgOrderValues($storeId)
     {
+        $amountUnit = Mage::getStoreConfig('currency/options/base', $storeId);
+
         $orderTotal = $this->getMetric(self::KEY_ORDER_TOTAL, $storeId);
         $orderItems = $this->getMetric(self::KEY_ORDER_SIZE_TOTAL, $storeId);
         $orderAmount = $this->getMetric(self::KEY_ORDER_AMOUNT_TOTAL, $storeId);
@@ -266,14 +272,16 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::ACTION_UPDATE,
             self::KEY_ORDER_SIZE_AVERAGE,
             $storeId,
-            ($orderItems/$orderTotal)
+            ($orderItems/$orderTotal),
+            $amountUnit
         );
 
         $this->setMetric(
             self::ACTION_UPDATE,
             self::KEY_ORDER_AMOUNT_AVERAGE,
             $storeId,
-            ($orderAmount/$orderTotal)
+            ($orderAmount/$orderTotal),
+            $amountUnit
         );
 
         if ($newOrderTotal > 0) {
@@ -281,14 +289,16 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 self::ACTION_UPDATE,
                 self::KEY_ORDER_SIZE_AVERAGE_NEW,
                 $storeId,
-                ($newOrderItems / $newOrderTotal)
+                ($newOrderItems / $newOrderTotal),
+                $amountUnit
             );
 
             $this->setMetric(
                 self::ACTION_UPDATE,
                 self::KEY_ORDER_AMOUNT_AVERAGE_NEW,
                 $storeId,
-                ($newOrderAmount / $newOrderTotal)
+                ($newOrderAmount / $newOrderTotal),
+                $amountUnit
             );
         }
     }
