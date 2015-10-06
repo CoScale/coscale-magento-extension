@@ -53,7 +53,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_ORDER_SIZE_AVERAGE_NEW] = array(
-            'name' => 'New Order size average',
+            'name' => 'Order size average',
             'description' => 'The average size of orders since last collect for this store',
             'unit' => 'items'
         );
@@ -65,7 +65,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_ORDER_AMOUNT_AVERAGE_NEW] = array(
-            'name' => 'New Order amount average',
+            'name' => 'Order amount average',
             'description' => 'The average amount of orders since last collect for this store',
             'unit' => 'Amount'
         );
@@ -83,7 +83,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_ORDER_SIZE_AVERAGE] = array(
-            'name' => 'Order size average',
+            'name' => 'Order size total average',
             'description' => 'The average size of an order in the system for this store',
             'unit' => 'items'
         );
@@ -95,31 +95,31 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_ORDER_AMOUNT_AVERAGE] = array(
-            'name' => 'Order amount average',
+            'name' => 'Order amount total average',
             'description' => 'The average amount of an order in the system for this store',
             'unit' => 'Amount'
         );
 
         $this->_metricData[self::KEY_ORDER_TOTAL] = array(
-            'name' => 'Total Orders',
+            'name' => 'Orders',
             'description' => 'The total number of orders in the system for this store',
             'unit' => 'orders'
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_NEW] = array(
-            'name' => 'Total orders new ',
+            'name' => 'Orders new',
             'description' => 'The total number of orders in new state',
             'unit' => 'orders'
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_PROCESSING] = array(
-            'name' => 'Total orders processing ',
+            'name' => 'Orders processing',
             'description' => 'The total number of orders in processing state',
             'unit' => 'orders'
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_COMPLETED] = array(
-            'name' => 'Total orders completed',
+            'name' => 'Orders completed',
             'description' => 'The total number of orders in completed state',
             'unit' => 'orders'
         );
@@ -448,13 +448,12 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         if (!is_object($collection)) {
             return array();
         }
-        return array(
+        return array(array(
             'name' => 'Amount of messages in the e-mail queue',
             'unit' => 'messages',
             'value' => $collection->getSize(),
             'store_id' => 0,
             'type' => 'A'
-        );
+        ));
     }
-
 }

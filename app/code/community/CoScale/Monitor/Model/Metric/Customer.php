@@ -25,7 +25,7 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
     public function _contruct()
     {
         $this->_metricData[self::KEY_CUSTOMER_TOTAL] = array(
-            'name' => 'Total Customers',
+            'name' => 'Customers',
             'description' => 'The total number of customers in the system',
             'unit' => 'customers'
         );

@@ -27,7 +27,7 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
     public function _contruct()
     {
         $this->_metricData[self::KEY_PRODUCT_TOTAL] = array(
-            'name' => 'Total products',
+            'name' => 'Products',
             'description' => 'The total number of products in the system',
             'unit' => 'products'
         );
@@ -39,7 +39,7 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
         );
 
         $this->_metricData[self::KEY_CATEGORIES_TOTAL] = array(
-            'name' => 'Total categories',
+            'name' => 'Categories',
             'description' => 'The total number of categories in the system',
             'unit' => 'categories'
         );
