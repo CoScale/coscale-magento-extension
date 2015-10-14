@@ -81,7 +81,7 @@ $event = $installer->getConnection()
         'Update Timestamp readable')
     ->setComment('CoScale event data');
 
-$event->setOption('type', Varien_Db_Adapter_Pdo_Mysql::ENGINE_MEMORY);
+$event->setOption('type', 'MEMORY');
 
 $metric = $installer->getConnection()
     ->newTable($installer->getTable('coscale_monitor/metric'))
@@ -167,7 +167,7 @@ $metric = $installer->getConnection()
     ->addIndex('COSCALE_METRIC_UNIQUE_IDX', 'key', array('type' => 'UNIQUE'))
     ->setComment('CoScale metric data');
 
-$metric->setOption('type', Varien_Db_Adapter_Pdo_Mysql::ENGINE_MEMORY);
+$metric->setOption('type', 'MEMORY');
 
 
 $installer->getConnection()->createTable($event);
