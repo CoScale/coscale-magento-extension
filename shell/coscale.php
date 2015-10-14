@@ -52,7 +52,10 @@ class CoScale_Shell extends Mage_Shell_Abstract
         }
 
         // Email queue size
-        $output['metrics'][] = Mage::getSingleton('coscale_monitor/metric_order')->getEmailQueueSize();
+        $emailQueueSize = Mage::getSingleton('coscale_monitor/metric_order')->getEmailQueueSize();
+        if (!empty($emailQueueSize)) {
+            $output['metrics'][] = $emailQueueSize;
+        }
 
         $output['events'] = array();
 
