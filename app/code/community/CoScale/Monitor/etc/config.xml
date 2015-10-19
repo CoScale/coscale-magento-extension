@@ -2,7 +2,7 @@
 <config>
     <modules>
         <CoScale_Monitor>
-            <version>0.6.0</version>
+            <version>0.9.0</version>
         </CoScale_Monitor>
     </modules>
     <global>
@@ -114,6 +114,91 @@
                     </coscale_monitor_event_reindex_start>
                 </observers>
             </controller_action_postdispatch_adminhtml_process_massReindex>
+
+            <controller_action_predispatch_adminhtml_cache_flushSystem>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>startFlushSystem</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_predispatch_adminhtml_cache_flushSystem>
+            <controller_action_postdispatch_adminhtml_cache_flushSystem>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>endFlushSystem</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_postdispatch_adminhtml_cache_flushSystem>
+
+            <controller_action_predispatch_adminhtml_cache_flushAll>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>startFlushAll</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_predispatch_adminhtml_cache_flushAll>
+            <controller_action_postdispatch_adminhtml_cache_flushAll>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>endFlushAll</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_postdispatch_adminhtml_cache_flushAll>
+
+            <controller_action_predispatch_adminhtml_cache_cleanImages>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>startCleanImages</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_predispatch_adminhtml_cache_cleanImages>
+            <controller_action_postdispatch_adminhtml_cache_cleanImages>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>endCleanImages</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_postdispatch_adminhtml_cache_cleanImages>
+
+            <controller_action_predispatch_adminhtml_cache_cleanMedia>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>startCleanAssets</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_predispatch_adminhtml_cache_cleanMedia>
+            <controller_action_postdispatch_adminhtml_cache_cleanMedia>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>endCleanAssets</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_postdispatch_adminhtml_cache_cleanMedia>
+
+            <controller_action_predispatch_adminhtml_cache_massRefresh>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>startMassRefresh</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_predispatch_adminhtml_cache_massRefresh>
+            <controller_action_postdispatch_adminhtml_cache_massRefresh>
+                <observers>
+                    <coscale_monitor_event_reindex_start>
+                        <class>coscale_monitor/event_cache</class>
+                        <method>endMassRefresh</method>
+                    </coscale_monitor_event_reindex_start>
+                </observers>
+            </controller_action_postdispatch_adminhtml_cache_massRefresh>
         </events>
     </global>
     <default>

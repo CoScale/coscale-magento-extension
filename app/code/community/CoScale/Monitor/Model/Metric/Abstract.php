@@ -45,7 +45,7 @@ class CoScale_Monitor_Model_Metric_Abstract
      *
      * @throws Exception
      */
-    protected function setMetric($action, $key, $store, $value, $type = false, $name = false, $descr = false, $unit = false)
+    protected function setMetric($action, $key, $store, $value, $unit = false, $type = false, $name = false, $descr = false)
     {
         if (!$type) {
             $type = $this->_metricType;

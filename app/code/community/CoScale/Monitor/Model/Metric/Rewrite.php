@@ -17,6 +17,10 @@ class CoScale_Monitor_Model_Metric_Rewrite extends CoScale_Monitor_Model_Metric_
     public function getUrlRewrites()
     {
         $collection = Mage::getResourceModel('core/url_rewrite_collection');
+        if(!is_object($collection))
+        {
+        	return array();
+        }
         $collection->getSelect()
             ->reset('columns')
             ->columns(array('store_id' => 'main_table.store_id',

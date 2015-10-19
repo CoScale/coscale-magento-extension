@@ -49,5 +49,7 @@ cat << EOF > package.xml
 </package>
 EOF
 
+sed -i "s/<version>.*<\/version>/<version>$VERSION<\/version>/" app/code/community/CoScale/Monitor/etc/config.xml
+
 tar czf CoScale-${VERSION}.tgz package.xml app shell
 rm package.xml

@@ -16,18 +16,23 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      */
     const KEY_ORDER_TOTAL = 2000;
     const KEY_ORDER_TOTAL_TODAY = 2001;
+    const KEY_ORDER_TOTAL_NEW = 2002;
 
     /**
      * Identifier for order amount average and total
      */
     const KEY_ORDER_AMOUNT_AVERAGE = 2010;
     const KEY_ORDER_SIZE_TOTAL = 2011;
+    const KEY_ORDER_AMOUNT_AVERAGE_NEW = 2012;
+    const KEY_ORDER_SIZE_TOTAL_NEW = 2013;
 
     /**
      * Identifier for order size average and total
      */
     const KEY_ORDER_SIZE_AVERAGE = 2020;
     const KEY_ORDER_AMOUNT_TOTAL = 2021;
+    const KEY_ORDER_SIZE_AVERAGE_NEW = 2022;
+    const KEY_ORDER_AMOUNT_TOTAL_NEW = 2023;
 
     /**
      * Identifier for order state processing/completed
@@ -41,6 +46,36 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      */
     public function _contruct()
     {
+        $this->_metricData[self::KEY_ORDER_SIZE_TOTAL_NEW] = array(
+            'name' => 'New Order size total',
+            'description' => 'The total size of orders since last collect for this store',
+            'unit' => 'items'
+        );
+
+        $this->_metricData[self::KEY_ORDER_SIZE_AVERAGE_NEW] = array(
+            'name' => 'Order size average',
+            'description' => 'The average size of orders since last collect for this store',
+            'unit' => 'items'
+        );
+
+        $this->_metricData[self::KEY_ORDER_AMOUNT_TOTAL_NEW] = array(
+            'name' => 'New Order amount total',
+            'description' => 'The total amount of orders since last collect for this store',
+            'unit' => 'Amount'
+        );
+
+        $this->_metricData[self::KEY_ORDER_AMOUNT_AVERAGE_NEW] = array(
+            'name' => 'Order amount average',
+            'description' => 'The average amount of orders since last collect for this store',
+            'unit' => 'Amount'
+        );
+
+        $this->_metricData[self::KEY_ORDER_TOTAL_NEW] = array(
+            'name' => 'Total New Orders',
+            'description' => 'The total number of orders since last collect for this store',
+            'unit' => 'orders'
+        );
+
         $this->_metricData[self::KEY_ORDER_SIZE_TOTAL] = array(
             'name' => 'Order size total',
             'description' => 'The total size of all order in the system for this store',
@@ -48,7 +83,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_ORDER_SIZE_AVERAGE] = array(
-            'name' => 'Order size average',
+            'name' => 'Order size total average',
             'description' => 'The average size of an order in the system for this store',
             'unit' => 'items'
         );
@@ -60,41 +95,51 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_ORDER_AMOUNT_AVERAGE] = array(
-            'name' => 'Order amount average',
+            'name' => 'Order amount total average',
             'description' => 'The average amount of an order in the system for this store',
             'unit' => 'Amount'
         );
 
         $this->_metricData[self::KEY_ORDER_TOTAL] = array(
-            'name' => 'Total orders',
+            'name' => 'Orders',
             'description' => 'The total number of orders in the system for this store',
             'unit' => 'orders'
         );
 
-        $this->_metricData[self::KEY_ORDER_TOTAL_TODAY] = array(
-            'name' => 'Total orders today',
-            'description' => 'The total number of orders in the system for this store placed today',
-            'unit' => 'orders'
-        );
-
         $this->_metricData[self::KEY_ORDER_STATE_NEW] = array(
-            'name' => 'Total orders new ',
+            'name' => 'Orders new',
             'description' => 'The total number of orders in new state',
             'unit' => 'orders'
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_PROCESSING] = array(
-            'name' => 'Total orders processing ',
+            'name' => 'Orders processing',
             'description' => 'The total number of orders in processing state',
             'unit' => 'orders'
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_COMPLETED] = array(
-            'name' => 'Total orders completed',
+            'name' => 'Orders completed',
             'description' => 'The total number of orders in completed state',
             'unit' => 'orders'
         );
+    }
 
+    public function resetOnCollect($key)
+    {
+        $resetKeys = array(
+            self::KEY_ORDER_TOTAL_NEW,
+            self::KEY_ORDER_AMOUNT_AVERAGE_NEW,
+            self::KEY_ORDER_SIZE_TOTAL_NEW,
+            self::KEY_ORDER_SIZE_AVERAGE_NEW,
+            self::KEY_ORDER_AMOUNT_TOTAL_NEW,
+
+        );
+
+        if (in_array($key, $resetKeys)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -107,6 +152,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         /** @var Mage_Sales_Model_Order $order */
         $order = $observer->getEvent()->getOrder();
 
+        $amountUnit = Mage::getStoreConfig('currency/options/base', $order->getStoreId());
+
         $this->setMetric(
             self::ACTION_INCREMENT,
             self::KEY_ORDER_SIZE_TOTAL,
@@ -118,7 +165,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::ACTION_INCREMENT,
             self::KEY_ORDER_AMOUNT_TOTAL,
             $order->getStoreId(),
-            $order->getBaseGrandTotal()
+            $order->getBaseGrandTotal(),
+            $amountUnit
         );
 
         $this->setMetric(
@@ -130,7 +178,22 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
 
         $this->setMetric(
             self::ACTION_INCREMENT,
-            self::KEY_ORDER_TOTAL_TODAY,
+            self::KEY_ORDER_SIZE_TOTAL_NEW,
+            $order->getStoreId(),
+            $order->getTotalItemCount()
+        );
+
+        $this->setMetric(
+            self::ACTION_INCREMENT,
+            self::KEY_ORDER_AMOUNT_TOTAL_NEW,
+            $order->getStoreId(),
+            $order->getBaseGrandTotal(),
+            $amountUnit
+        );
+
+        $this->setMetric(
+            self::ACTION_INCREMENT,
+            self::KEY_ORDER_TOTAL_NEW,
             $order->getStoreId(),
             1
         );
@@ -195,30 +258,58 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      */
     public function updateAvgOrderValues($storeId)
     {
+        $amountUnit = Mage::getStoreConfig('currency/options/base', $storeId);
+
         $orderTotal = $this->getMetric(self::KEY_ORDER_TOTAL, $storeId);
         $orderItems = $this->getMetric(self::KEY_ORDER_SIZE_TOTAL, $storeId);
         $orderAmount = $this->getMetric(self::KEY_ORDER_AMOUNT_TOTAL, $storeId);
 
+        $newOrderTotal = $this->getMetric(self::KEY_ORDER_TOTAL_NEW, $storeId);
+        $newOrderItems = $this->getMetric(self::KEY_ORDER_SIZE_TOTAL_NEW, $storeId);
+        $newOrderAmount = $this->getMetric(self::KEY_ORDER_AMOUNT_TOTAL_NEW, $storeId);
 
         $this->setMetric(
             self::ACTION_UPDATE,
             self::KEY_ORDER_SIZE_AVERAGE,
             $storeId,
-            ($orderItems/$orderTotal)
+            ($orderItems/$orderTotal),
+            $amountUnit
         );
 
         $this->setMetric(
             self::ACTION_UPDATE,
             self::KEY_ORDER_AMOUNT_AVERAGE,
             $storeId,
-            ($orderAmount/$orderTotal)
+            ($orderAmount/$orderTotal),
+            $amountUnit
         );
+
+        if ($newOrderTotal > 0) {
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_SIZE_AVERAGE_NEW,
+                $storeId,
+                ($newOrderItems / $newOrderTotal),
+                $amountUnit
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_AMOUNT_AVERAGE_NEW,
+                $storeId,
+                ($newOrderAmount / $newOrderTotal),
+                $amountUnit
+            );
+        }
     }
 
 
     public function initOrderData()
     {
         $collection = Mage::getResourceModel('sales/order_collection');
+        if (!is_object($collection)) {
+            return;
+        }
         $collection->getSelect()
             ->reset('columns')
             ->columns(array('amount' => 'SUM(main_table.base_grand_total)',
@@ -314,6 +405,9 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     {
         /** @var $collection Mage_Reports_Model_Resource_Quote_Collection */
         $collection = Mage::getResourceModel('reports/quote_collection');
+        if (!is_object($collection)) {
+            return array();
+        }
         $collection->prepareForAbandonedReport(array());
         $collection->getSelect()
             ->columns(array('store_id' => 'main_table.store_id',
@@ -351,17 +445,15 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             return array();
         }
         $collection = Mage::getResourceModel('core/email_queue_collection');
-        if(!is_object($collection))
-        {
-        	return array();
+        if (!is_object($collection)) {
+            return array();
         }
-        return array(
+        return array(array(
             'name' => 'Amount of messages in the e-mail queue',
             'unit' => 'messages',
             'value' => $collection->getSize(),
             'store_id' => 0,
             'type' => 'A'
-        );
+        ));
     }
-
 }

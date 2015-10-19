@@ -25,14 +25,8 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
     public function _contruct()
     {
         $this->_metricData[self::KEY_CUSTOMER_TOTAL] = array(
-            'name' => 'Total customers',
+            'name' => 'Customers',
             'description' => 'The total number of customers in the system',
-            'unit' => 'customers'
-        );
-
-        $this->_metricData[self::KEY_CUSTOMER_TODAY] = array(
-            'name' => 'New customers today',
-            'description' => 'The total number of customers  created today',
             'unit' => 'customers'
         );
     }
@@ -57,13 +51,6 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
             $customer->getStore()->getId(),
             1
         );
-
-        $this->setMetric(
-            self::ACTION_INCREMENT,
-            self::KEY_CUSTOMER_TODAY,
-            $customer->getStore()->getId(),
-            1
-        );
     }
 
     /**
@@ -71,23 +58,7 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
      */
     public function dailyCron()
     {
-        $this->resetDayCounter();
         $this->updateTotalCount();
-    }
-
-    /**
-     * Reset daily new created customer accounts counter per store
-     */
-    protected function resetDayCounter()
-    {
-        foreach (Mage::app()->getStores(true) as $storeId => $store) {
-            $this->setMetric(
-                self::ACTION_UPDATE,
-                self::KEY_CUSTOMER_TODAY,
-                $storeId,
-                0
-            );
-        }
     }
 
     /**
@@ -96,6 +67,9 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
     public function updateTotalCount()
     {
         $collection = Mage::getResourceModel('customer/customer_collection');
+        if (!is_object($collection)) {
+            return;
+        }
         $collection->getSelect()
             ->reset('columns')
             ->columns(array('website_id' => 'e.website_id',
