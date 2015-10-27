@@ -184,7 +184,11 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
                 ->setTimestampEnd(time());
         }
 
-        $this->save();
+        try {
+            $this->save();
+        } catch (Exception $ex) {
+            Mage::log($ex->getMessage(), null, 'coscale.log', true);
+        }
 
         return $this;
     }
@@ -213,7 +217,11 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
             $this->setEventData($data);
         }
 
-        $this->save();
+        try {
+            $this->save();
+        } catch (Exception $ex) {
+            Mage::log($ex->getMessage(), null, 'coscale.log', true);
+        }
     }
 
     /**

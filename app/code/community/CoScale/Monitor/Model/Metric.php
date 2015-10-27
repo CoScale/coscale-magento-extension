@@ -72,7 +72,11 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
             ->setValue($value)
             ->setUnit($unit);
 
-        $this->save();
+        try {
+            $this->save();
+        } catch (Exception $ex) {
+            Mage::log($ex->getMessage(), null, 'coscale.log', true);
+        }
     }
 
     /**
