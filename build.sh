@@ -24,7 +24,7 @@ function get_content {
     cd ..
 }
 
-for dir in app shell; do 
+for dir in app shell; do
     CONTENTS="${CONTENTS}`get_content $dir`"
 done
 
@@ -45,7 +45,7 @@ cat << EOF > package.xml
     <time>09:29:57</time>
     <contents><target name="mage"><dir name=".">$CONTENTS</dir></target></contents>
     <compatible/>
-    <dependencies><required><php><min>5.4.0</min><max>6.0.0</max></php></required></dependencies>
+    <dependencies><required><php><min>5.3.0</min><max>6.0.0</max></php></required></dependencies>
 </package>
 EOF
 
