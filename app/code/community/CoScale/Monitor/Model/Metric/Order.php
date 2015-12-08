@@ -411,7 +411,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         $collection->prepareForAbandonedReport(array());
         $collection->getSelect()
             ->columns(array('store_id' => 'main_table.store_id',
-                'count' => 'COUNT(*)'))
+                'count' => 'COUNT(*)',
+                'subtotal' => 'subtotal'))
             ->group('main_table.store_id');
         $output = array();
         foreach ($collection as $order) {
@@ -422,9 +423,18 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 'store_id' => (int)$order->getStoreId(),
                 'type' => 'A'
             );
+            $output[] = array(
+                'name' => 'Total value of abandoned carts',
+                'unit' => 'Amount',
+                'value' => (float)$order->getSubtotal(),
+                'store_id' => (int)$order->getStoreId(),
+                'type' => 'A'
+            );
         }
         return $output;
     }
+
+
 
     public function getEmailQueueSize()
     {
