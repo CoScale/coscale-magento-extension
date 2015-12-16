@@ -1,0 +1,12 @@
+<layout version="0.1.0">
+
+<!--
+Default layout, loads most of the pages
+-->
+
+    <default>
+        <reference name="head" before="-">
+                <block type="core/template" name="coscale_monitor" as="coscale_monitor" template="coscale_monitor/rum.phtml" />
+        </reference>
+    </default>
+</layout>

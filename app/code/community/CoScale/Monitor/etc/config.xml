@@ -201,6 +201,15 @@
             </controller_action_postdispatch_adminhtml_cache_massRefresh>
         </events>
     </global>
+    <frontend>
+        <layout>
+            <updates>
+                <coscale_monitor>
+                    <file>coscale_monitor.xml</file>
+                </coscale_monitor>
+            </updates>
+        </layout>
+    </frontend>
     <default>
         <coscale>
             <general>
