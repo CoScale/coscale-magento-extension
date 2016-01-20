@@ -171,7 +171,7 @@ class CoScale_Monitor_Model_Event extends Mage_Core_Model_Abstract
         $this->setType($type)
             ->setName($name)
             ->setDescription($description)
-            ->setEventData(serialize($data))
+            ->setEventData($data) 
             ->setDuration(0)
             ->setTimestampStart(time())
             ->setSource($source)
