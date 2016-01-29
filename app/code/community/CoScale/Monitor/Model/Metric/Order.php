@@ -11,6 +11,10 @@
 class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Abstract
 {
 
+    protected $statusPendingPickPack = false;
+    protected $statusPickPack = false;
+    protected $statusCompletedPickPack = false;
+
     /**
      * Identifier for total orders
      */
@@ -40,6 +44,19 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     const KEY_ORDER_STATE_NEW = 2030;
     const KEY_ORDER_STATE_PROCESSING = 2031;
     const KEY_ORDER_STATE_COMPLETED = 2032;
+
+    /**
+     * Identifier for pick order and time calculation
+     */
+    const KEY_ORDER_STATE_PENDING_PICKPACK = 2040;
+    const KEY_ORDER_STATE_CURRENT_PICKPACK = 2041;
+    const KEY_ORDER_STATE_COMPLETED_PICKPACK = 2042;
+    const KEY_START_PICKPACK = 2043;
+    const KEY_PICKED_QTY = 2044;
+    const KEY_PICKED_TIME = 2045;
+    const KEY_AVGTIME_PICKPACK = 2046;
+    const KEY_TIME_PENDING_PICKPACK = 2047;
+    const KEY_TIME_CURRENT_PICKPACK = 2048;
 
     /**
      * Public contructor function
@@ -123,6 +140,58 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             'description' => 'The total number of orders in completed state',
             'unit' => 'orders'
         );
+
+        $this->_metricData[self::KEY_ORDER_STATE_PENDING_PICKPACK] = array(
+            'name' => 'Orders pending pick/pack',
+            'description' => 'The total number of orders in waiting for pick/pack state',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_ORDER_STATE_CURRENT_PICKPACK] = array(
+            'name' => 'Orders pick/pack',
+            'description' => 'The total number of orders in pick/pack state',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_ORDER_STATE_COMPLETED_PICKPACK] = array(
+            'name' => 'Orders completed pick/pack',
+            'description' => 'The total number of orders in completed pick/pack state',
+            'unit' => 'orders'
+        );
+
+        $this->_metricData[self::KEY_PICKED_QTY] = array(
+            'name' => 'Picked qty',
+            'description' => 'The qty of orders picked',
+            'unit' => 'qty'
+        );
+
+        $this->_metricData[self::KEY_PICKED_TIME] = array(
+            'name' => 'Picked time',
+            'description' => 'Total time to pick/pack',
+            'unit' => 'seconds'
+        );
+
+        $this->_metricData[self::KEY_AVGTIME_PICKPACK] = array(
+            'name' => 'Avg time pick/pack',
+            'description' => 'Avg time to pick/pack an order',
+            'unit' => 'seconds'
+        );
+
+        $this->_metricData[self::KEY_TIME_PENDING_PICKPACK] = array(
+            'name' => 'Time pending pick/pack',
+            'description' => 'The total time needed to pick/pack new orders',
+            'unit' => 'seconds'
+        );
+
+        $this->_metricData[self::KEY_TIME_CURRENT_PICKPACK] = array(
+            'name' => 'Time current pick/pack ',
+            'description' => 'The total time needed to pick/pack current orders in pick/pack state',
+            'unit' => 'seconds'
+        );
+
+        $this->statusPendingPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_pending');
+        $this->statusPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack');
+        $this->statusCompletedPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_completed');
     }
 
     public function resetOnCollect($key)
@@ -147,11 +216,14 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      *
      * @param Varien_Event_Observer $observer
      */
-    public function addNew(Varien_Event_Observer $observer)
+    public function salesOrderPlaceAfter(Varien_Event_Observer $observer)
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         /** @var Mage_Sales_Model_Order $order */
         $order = $observer->getEvent()->getOrder();
-
         $amountUnit = Mage::getStoreConfig('currency/options/base', $order->getStoreId());
 
         $this->setMetric(
@@ -198,57 +270,144 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             1
         );
 
-        // Update state statistics (only is changed)
-        if ($order->getState() != $order->getOrigData('state')) {
-            // Decrease order processing when previous state was processing
-            if ($order->getOrigData('state') == 'new') {
-                $this->setMetric(
-                    self::ACTION_INCREMENT,
-                    self::KEY_ORDER_STATE_NEW,
-                    $order->getStoreId(),
-                    -1
-                );
-            }
-            // Decrease order processing when previous state was processing
-            if ($order->getOrigData('state') == 'processing') {
-                $this->setMetric(
-                    self::ACTION_INCREMENT,
-                    self::KEY_ORDER_STATE_PROCESSING,
-                    $order->getStoreId(),
-                    -1
-                );
-            }
+        $this->updateAvgOrderValues($order->getStoreId());
+    }
 
-            // Increase orders with the state new
-            if ($order->getState() == 'new') {
-                $this->setMetric(
-                    self::ACTION_INCREMENT,
-                    self::KEY_ORDER_STATE_NEW,
-                    $order->getStoreId(),
-                    1
-                );
+    /**
+     * Save order status changes on order save
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function salesOrderSaveCommitAfter(Varien_Event_Observer $observer)
+    {
+        $keys = array();
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
+        /** @var Mage_Sales_Model_Order $order */
+        $order = $observer->getEvent()->getOrder();
+
+        // Update state/status statistics (only if changed)
+        if ($order->getState() != $order->getOrigData('state')) {
+            // Decrease qty for previous state
+            switch ($order->getOrigData('state')) {
+                case Mage_Sales_Model_Order::STATE_NEW:
+                    $keys[self::KEY_ORDER_STATE_NEW] = -1;
+                    break;
+                case Mage_Sales_Model_Order::STATE_PROCESSING:
+                    $keys[self::KEY_ORDER_STATE_PROCESSING] = -1;
+                    break;
             }
-            // Increase orders with the state processing
-            if ($order->getState() == 'processing') {
-                $this->setMetric(
-                    self::ACTION_INCREMENT,
-                    self::KEY_ORDER_STATE_PROCESSING,
-                    $order->getStoreId(),
-                    1
-                );
-            }
-            // Increase orders with the state complete
-            if ($order->getState() == 'complete') {
-                $this->setMetric(
-                    self::ACTION_INCREMENT,
-                    self::KEY_ORDER_STATE_COMPLETED,
-                    $order->getStoreId(),
-                    1
-                );
+            // Increase qty for current state
+            switch ($order->getData('state')) {
+                case Mage_Sales_Model_Order::STATE_NEW:
+                    $keys[self::KEY_ORDER_STATE_NEW] = 1;
+                    break;
+                case Mage_Sales_Model_Order::STATE_PROCESSING:
+                    $keys[self::KEY_ORDER_STATE_PROCESSING] = 1;
+                    break;
+                case Mage_Sales_Model_Order::STATE_COMPLETE:
+                    $keys[self::KEY_ORDER_STATE_COMPLETED] = 1;
+                    break;
             }
         }
 
-        $this->updateAvgOrderValues($order->getStoreId());
+        if ($order->getStatus() != $order->getOrigData('status')) {
+            // Decrease qty for previous state
+            switch ($order->getOrigData('status')) {
+                case $this->statusPendingPickPack:
+                    $keys[self::KEY_ORDER_STATE_PENDING_PICKPACK] = -1;
+                    break;
+                case $this->statusPickPack:
+                    $keys[self::KEY_ORDER_STATE_CURRENT_PICKPACK] = -1;
+                    break;
+                case $this->statusCompletedPickPack:
+                    $keys[self::KEY_ORDER_STATE_COMPLETED_PICKPACK] = -1;
+                    break;
+            }
+            // Increase qty for current state
+            switch ($order->getData('status')) {
+                case $this->statusPendingPickPack:
+                    $keys[self::KEY_ORDER_STATE_PENDING_PICKPACK] = 1;
+                    break;
+                case $this->statusPickPack:
+                    $keys[self::KEY_ORDER_STATE_CURRENT_PICKPACK] = 1;
+                    break;
+                case $this->statusCompletedPickPack:
+                    $keys[self::KEY_ORDER_STATE_COMPLETED_PICKPACK] = 1;
+                    break;
+            }
+        }
+        if (count($keys)>0) {
+            // Check if order picked data decreases
+            if (isset($keys[self::KEY_ORDER_STATE_CURRENT_PICKPACK]) &&
+                $keys[self::KEY_ORDER_STATE_CURRENT_PICKPACK]<0) {
+                // Get difference between last timestamp and now (time used for orderpicking)
+                $timeUsed = 1;
+                if ($metricData = $this->getMetricData(self::KEY_PICKED_TIME, $order->getStoreId())) {
+                    $currentDate = date('U', Mage::getModel('core/date')->timestamp(time()));
+                    $lastDate = date('U', strtotime($metricData->getUpdatedAt()));
+                    $timeUsed = $currentDate - $lastDate;
+                }
+                $keys[self::KEY_PICKED_TIME] = $timeUsed;
+                $keys[self::KEY_PICKED_QTY] = 1;
+            }
+
+            foreach ($keys as $key => $qty) {
+                if ($qty <> 0) {
+                    $this->setMetric(
+                        self::ACTION_INCREMENT,
+                        $key,
+                        $order->getStoreId(),
+                        $qty
+                    );
+                }
+
+            }
+            $this->updateAvgPickValues($order->getStoreId());
+        }
+
+    }
+
+    /**
+     * Update pick/pack avarage values
+     *
+     * @param $storeId
+     */
+    public function updateAvgPickValues($storeId)
+    {
+        $pickTime = $this->getMetric(self::KEY_PICKED_TIME, $storeId);
+        $pickQty = $this->getMetric(self::KEY_PICKED_QTY, $storeId);
+
+        // Update avg pick time
+        if ($pickQty>0) {
+            $avgPickTime = floor($pickTime/$pickQty);
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_AVGTIME_PICKPACK,
+                $storeId,
+                $avgPickTime,
+                'seconds'
+            );
+
+            $updateAvgKeys = array(
+                self::KEY_ORDER_STATE_PENDING_PICKPACK=>self::KEY_TIME_PENDING_PICKPACK,
+                self::KEY_ORDER_STATE_CURRENT_PICKPACK=>self::KEY_TIME_CURRENT_PICKPACK
+            );
+            // Update avg values for keys
+            foreach ($updateAvgKeys as $from => $to) {
+                $qty = $this->getMetric($from, $storeId);
+
+                $this->setMetric(
+                    self::ACTION_UPDATE,
+                    $to,
+                    $storeId,
+                    ($qty*$avgPickTime),
+                    'qty'
+                );
+            }
+        }
     }
 
     /**
@@ -306,6 +465,10 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
 
     public function initOrderData()
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         $collection = Mage::getResourceModel('sales/order_collection');
         if (!is_object($collection)) {
             return;
@@ -394,6 +557,46 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             );
 
             $this->updateAvgOrderValues($storeId);
+        }
+    }
+
+    /**
+     * Generate output event
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function generate(Varien_Event_Observer $observer)
+    {
+        $event = $observer->getEvent();
+
+        /** @var CoScale_Monitor_Helper_Data $logger */
+        $logger = $event->getLogger();
+        /** @var CoScale_Monitor_Model_Output_Generator $output */
+        $output = $event->getOutput();
+
+        // Get Abandonned Carts
+        try {
+            $logger->debugStart('AbandonnedCarts');
+
+            $carts = $this->getAbandonnedCarts();
+            foreach ($carts as $data) {
+                $output->addMetric($data);
+            }
+            $logger->debugEnd('AbandonnedCarts');
+        } catch (Exception $ex) {
+            $logger->debugEndError('AbandonnedCarts', $ex);
+        }
+
+        // Get Email Queue Size
+        try {
+            $logger->debugStart('Email Queue Size');
+
+            foreach ($this->getEmailQueueSize() as $data) {
+                $output->addMetric($data);
+            }
+            $logger->debugEnd('Email Queue Size');
+        } catch (Exception $ex) {
+            $logger->debugEndError('Email Queue Size', $ex);
         }
     }
 
