@@ -10,8 +10,8 @@
 class CoScale_Monitor_Model_Metric_Abstract
 {
     protected $_metric = false;
-    protected $_helper = false;
     protected $_metricData = array();
+    protected $_helper = false;
 
     protected $_metricType = CoScale_Monitor_Model_Metric::TYPE_APPLICATION;
 
@@ -104,5 +104,6 @@ class CoScale_Monitor_Model_Metric_Abstract
         }
         return $data;
     }
+
 
 }
