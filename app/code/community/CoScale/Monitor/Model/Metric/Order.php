@@ -184,7 +184,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         );
 
         $this->_metricData[self::KEY_TIME_CURRENT_PICKPACK] = array(
-            'name' => 'Time current pick/pack ',
+            'name' => 'Time current pick/pack',
             'description' => 'The total time needed to pick/pack current orders in pick/pack state',
             'unit' => 'seconds'
         );

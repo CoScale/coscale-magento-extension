@@ -254,7 +254,7 @@
         </coscale>
         <system>
             <coscale_monitor>
-                <enabled>0</enabled>
+                <enabled>1</enabled>
                 <status_pickpack_pending>processing</status_pickpack_pending>
                 <status_pickpack>processing_pickpack</status_pickpack>
                 <status_pickpack_completed>processing_pickpack_done</status_pickpack_completed>
