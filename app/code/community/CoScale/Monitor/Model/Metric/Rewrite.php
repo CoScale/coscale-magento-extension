@@ -10,6 +10,29 @@
 class CoScale_Monitor_Model_Metric_Rewrite extends CoScale_Monitor_Model_Metric_Abstract
 {
 
+    public function generate(Varien_Event_Observer $observer)
+    {
+        $event = $observer->getEvent();
+
+        /** @var CoScale_Monitor_Helper_Data $logger */
+        $logger = $event->getLogger();
+        /** @var CoScale_Monitor_Model_Output_Generator $output */
+        $output = $event->getOutput();
+
+        // Get URL Rewrites
+        try {
+            $logger->debugStart('Rewrites');
+
+            foreach ($this->getUrlRewrites() as $data) {
+                $output->addMetric($data);
+            }
+
+            $logger->debugEnd('Rewrites');
+        } catch (Exception $ex) {
+            $logger->debugEndError('Rewrites', $ex);
+        }
+    }
+
     /**
      * Get amount of rewrites
      * @return array
@@ -17,9 +40,8 @@ class CoScale_Monitor_Model_Metric_Rewrite extends CoScale_Monitor_Model_Metric_
     public function getUrlRewrites()
     {
         $collection = Mage::getResourceModel('core/url_rewrite_collection');
-        if(!is_object($collection))
-        {
-        	return array();
+        if (!is_object($collection)) {
+            return array();
         }
         $collection->getSelect()
             ->reset('columns')

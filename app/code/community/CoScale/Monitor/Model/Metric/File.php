@@ -9,6 +9,38 @@
  */
 class CoScale_Monitor_Model_Metric_File extends CoScale_Monitor_Model_Metric_Abstract
 {
+    public function generate(Varien_Event_Observer $observer)
+    {
+        $event = $observer->getEvent();
+
+        /** @var CoScale_Monitor_Helper_Data $logger */
+        $logger = $event->getLogger();
+        /** @var CoScale_Monitor_Model_Output_Generator $output */
+        $output = $event->getOutput();
+
+        // Get Error reports
+        try {
+            $logger->debugStart('Error Reports');
+
+            $output->addMetric($this->getErrorReports());
+
+            $logger->debugEnd('Error Reports');
+        } catch (Exception $ex) {
+            $logger->debugEndError('Error Reports', $ex);
+        }
+
+        // Get Logfiles (name and size)
+        try {
+            $logger->debugStart('Logfiles');
+
+            foreach ($this->getLogFiles() as $data) {
+                $output->addMetric($data);
+            }
+            $logger->debugEnd('Logfiles');
+        } catch (Exception $ex) {
+            $logger->debugEndError('Logfiles', $ex);
+        }
+    }
 
     /**
      * Get amount of reports in var/report

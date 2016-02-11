@@ -11,6 +11,7 @@ class CoScale_Monitor_Model_Metric_Abstract
 {
     protected $_metric = false;
     protected $_metricData = array();
+    protected $_helper = false;
 
     protected $_metricType = CoScale_Monitor_Model_Metric::TYPE_APPLICATION;
 
@@ -20,6 +21,7 @@ class CoScale_Monitor_Model_Metric_Abstract
     public function __construct()
     {
         $this->_metric = Mage::getModel('coscale_monitor/metric');
+        $this->_helper = Mage::helper('coscale_monitor');
         $this->_contruct();
     }
 
@@ -74,14 +76,34 @@ class CoScale_Monitor_Model_Metric_Abstract
         }
     }
 
+    /**
+     * @param $key
+     * @param $store
+     * @return int
+     */
     protected function getMetric($key, $store)
     {
-        $data = $this->_metric->loadByKey($key, $store);
-
-        if (!$data->getId()) {
+        if (!$data = $this->getMetricData($key, $store)) {
             return 0;
         }
         return $data->getValue();
     }
+
+    /**
+     * @param $key
+     * @param $store
+     * @return $data|bool
+     */
+    protected function getMetricData($key, $store)
+    {
+        /** @var CoScale_Monitor_Model_Metric $data */
+        $data = $this->_metric->loadByKey($key, $store);
+
+        if (!$data->getId()) {
+            return false;
+        }
+        return $data;
+    }
+
 
 }

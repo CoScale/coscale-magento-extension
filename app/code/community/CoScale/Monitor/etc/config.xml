@@ -2,7 +2,7 @@
 <config>
     <modules>
         <CoScale_Monitor>
-            <version>0.10.0</version>
+            <version>0.11.0</version>
         </CoScale_Monitor>
     </modules>
     <global>
@@ -41,6 +41,34 @@
             </coscale_monitor_setup>
         </resources>
         <events>
+            <coscale_output_generator>
+                <observers>
+                    <coscale_generate_metrics>
+                        <class>coscale_monitor/metric_observer</class>
+                        <method>generate</method>
+                    </coscale_generate_metrics>
+                    <coscale_generate_events>
+                        <class>coscale_monitor/event_observer</class>
+                        <method>generate</method>
+                    </coscale_generate_events>
+                    <coscale_generate_order_metrics>
+                        <class>coscale_monitor/metric_order</class>
+                        <method>generate</method>
+                    </coscale_generate_order_metrics>
+                    <coscale_generate_file_metrics>
+                        <class>coscale_monitor/metric_file</class>
+                        <method>generate</method>
+                    </coscale_generate_file_metrics>
+                    <coscale_generate_rewrite_metrics>
+                        <class>coscale_monitor/metric_rewrite</class>
+                        <method>generate</method>
+                    </coscale_generate_rewrite_metrics>
+                    <coscale_generate_system_metrics>
+                        <class>coscale_monitor/metric_system</class>
+                        <method>generate</method>
+                    </coscale_generate_system_metrics>
+                </observers>
+            </coscale_output_generator>
             <store_save_after>
                 <observers>
                     <coscale_monitor_event_store_add>
@@ -93,10 +121,18 @@
                 <observers>
                     <coscale_monitor_metric_order_add>
                         <class>coscale_monitor/metric_order</class>
-                        <method>addNew</method>
+                        <method>salesOrderPlaceAfter</method>
                     </coscale_monitor_metric_order_add>
                 </observers>
             </sales_order_place_after>
+            <sales_order_save_commit_after>
+                <observers>
+                    <coscale_monitor_metric_order_save>
+                        <class>coscale_monitor/metric_order</class>
+                        <method>salesOrderSaveCommitAfter</method>
+                    </coscale_monitor_metric_order_save>
+                </observers>
+            </sales_order_save_commit_after>
 
             <controller_action_predispatch_adminhtml_process_massReindex>
                 <observers>
@@ -201,12 +237,29 @@
             </controller_action_postdispatch_adminhtml_cache_massRefresh>
         </events>
     </global>
+    <frontend>
+        <layout>
+            <updates>
+                <coscale_monitor>
+                    <file>coscale_monitor.xml</file>
+                </coscale_monitor>
+            </updates>
+        </layout>
+    </frontend>
     <default>
         <coscale>
             <general>
                 <maxruntime>1000</maxruntime>
             </general>
         </coscale>
+        <system>
+            <coscale_monitor>
+                <enabled>1</enabled>
+                <status_pickpack_pending>processing</status_pickpack_pending>
+                <status_pickpack>processing_pickpack</status_pickpack>
+                <status_pickpack_completed>processing_pickpack_done</status_pickpack_completed>
+            </coscale_monitor>
+        </system>
     </default>
 
     <crontab>

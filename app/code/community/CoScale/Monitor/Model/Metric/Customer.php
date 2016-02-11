@@ -38,6 +38,10 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
      */
     public function addNew(Varien_Event_Observer $observer)
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         /** @var Mage_Customer_Model_Customer $customer */
         $customer = $observer->getEvent()->getCustomer();
 
@@ -58,6 +62,9 @@ class CoScale_Monitor_Model_Metric_Customer extends CoScale_Monitor_Model_Metric
      */
     public function dailyCron()
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
         $this->updateTotalCount();
     }
 

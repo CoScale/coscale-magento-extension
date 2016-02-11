@@ -58,6 +58,10 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
      */
     public function addNewProduct(Varien_Event_Observer $observer)
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         /** @var Mage_Catalog_Model_Product $product */
         $product = $observer->getEvent()->getProduct();
 
@@ -87,6 +91,10 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
      */
     public function removeProduct(Varien_Event_Observer $observer)
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         $this->setMetric(
             self::ACTION_INCREMENT,
             self::KEY_PRODUCT_TOTAL,
@@ -102,6 +110,10 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
      */
     public function addNewCategory(Varien_Event_Observer $observer)
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         /** @var Mage_Catalog_Model_Category $category */
         $category = $observer->getEvent()->getCategory();
 
@@ -131,6 +143,10 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
      */
     public function removeCategory(Varien_Event_Observer $observer)
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+
         $this->setMetric(
             self::ACTION_INCREMENT,
             self::KEY_CATEGORIES_TOTAL,
@@ -144,6 +160,9 @@ class CoScale_Monitor_Model_Metric_Product extends CoScale_Monitor_Model_Metric_
      */
     public function dailyCron()
     {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
         $this->resetDayCounter();
         $this->updateTotalCount();
     }

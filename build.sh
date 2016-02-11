@@ -33,13 +33,13 @@ cat << EOF > package.xml
 <package>
     <name>CoScale</name>
     <version>$VERSION</version>
-    <stability>beta</stability>
-    <license>Commercial</license>
+    <stability>stable</stability>
+    <license>MITL</license>
     <channel>community</channel>
     <extends/>
     <summary>This module enables you to send important business and IT metrics from Magento to CoScale.</summary>
     <description>The CoScale module exposes Magento events and metrics to the CoScale Agent. The metrics contain business metrics, such as the number of products, orders, abondoned carts, etc and technical metrics such as Magento caching metrics. The events contain magento admin actions such as page cache flushes, reindexing, etc.</description>
-    <notes>The CoScale module is currently in Beta</notes>
+    <notes>The CoScale module is still under development. All feedback is welcome. </notes>
     <authors><author><name>CoScale Developer</name><user>cs-dev</user><email>info@coscale.com</email></author></authors>
     <date>2015-08-13</date>
     <time>09:29:57</time>
