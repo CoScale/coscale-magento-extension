@@ -24,7 +24,7 @@ class CoScale_Monitor_Model_Event_Observer
                         'message' => $event->getDescription(),
                         'data' => array_merge(
                             array('originator' => $event->getSource()),
-                            unserialize($event->getEventData())
+                            $event->getEventData()
                         ),
                         'start_time' => (int)(time() - $event->getTimestampStart()),
                         'stop_time' => (int)($event->getTimestampEnd() != 0 ? (time() - $event->getTimestampEnd()) : 0),
@@ -51,12 +51,14 @@ class CoScale_Monitor_Model_Event_Observer
                 ->setOrder('finished_at', 'DESC');
             /** @var Mage_Cron_Model_Schedule $event */
             foreach ($collection as $cron) {
-                $output['events'][] = array(
-                    'type' => CoScale_Monitor_Model_Event::GROUP_CRON,
-                    'message' => $cron->getJobCode(),
-                    'status' => $cron->getStatus(),
-                    'start_time' => (int)(time() - strtotime($cron->getExecutedAt())),
-                    'stop_time' => (int)(time() - strtotime($cron->getFinishedAt())),
+                $output->addEvent(
+                    array(
+                        'type' => CoScale_Monitor_Model_Event::GROUP_CRON,
+                        'message' => $cron->getJobCode(),
+                        'status' => $cron->getStatus(),
+                        'start_time' => (int)(time() - strtotime($cron->getExecutedAt())),
+                        'stop_time' => (int)(time() - strtotime($cron->getFinishedAt())),
+                    )
                 );
             }
             $logger->debugEnd('Cronjob Collection');
@@ -67,11 +69,13 @@ class CoScale_Monitor_Model_Event_Observer
         try {
             $logger->debugStart('Maintenance Flag');
             if (file_exists(Mage::getBaseDir('base') . DS . 'maintenance.flag')) {
-                $output['events'][] = array(
-                    'type' => CoScale_Monitor_Model_Event::GROUP_ADMIN,
-                    'message' => 'Maintenance mode enabled',
-                    'start_time' => 0,
-                    'stop_time' => 0,
+                $output->addEvent(
+                    array(
+                        'type' => CoScale_Monitor_Model_Event::GROUP_ADMIN,
+                        'message' => 'Maintenance mode enabled',
+                        'start_time' => 0,
+                        'stop_time' => 0,
+                    )
                 );
             }
             $logger->debugEnd('Maintenance Flag');
