@@ -3,7 +3,7 @@
 
 import requests, sys, subprocess
 
-if (len(sys.argv) != 4):
+if len(sys.argv) != 4:
     print 'usage ' + sys.argv[0] + ' <version> <repo> <token>'
     sys.exit(255);
 
