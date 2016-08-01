@@ -261,16 +261,21 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::KEY_TIME_CURRENT_PICKPACK,
         );
 
+        $amountUnit = Mage::getStoreConfig('currency/options/base', $storeId);
+
         foreach ($initKeys as $key)
         {
             $metricData = $this->getMetric($key, $storeId);
+
+            // 'Amount' unit of a metric should always be replaced by the store currency
+            $unit = ($this->_metricData[$key]['unit'] == 'Amount' ? $amountUnit : $this->_metricData[$key]['unit']);
             if (empty($metricData)) {
                 $this->setMetric(
                     self::ACTION_UPDATE,
                     $key,
                     $storeId,
                     0,
-                    $this->_metricData[$key]['unit']
+                    $unit
                 );
             }
         }
@@ -496,8 +501,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::ACTION_UPDATE,
             self::KEY_ORDER_SIZE_AVERAGE,
             $storeId,
-            ($orderItems/$orderTotal),
-            $amountUnit
+            ($orderItems/$orderTotal)
         );
 
         $this->setMetric(
@@ -513,8 +517,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 self::ACTION_UPDATE,
                 self::KEY_ORDER_SIZE_AVERAGE_NEW,
                 $storeId,
-                ($newOrderItems / $newOrderTotal),
-                $amountUnit
+                ($newOrderItems / $newOrderTotal)
             );
 
             $this->setMetric(
@@ -595,6 +598,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         }
 
         foreach ($data as $storeId => $details) {
+            $amountUnit = Mage::getStoreConfig('currency/options/base', $storeId);
+
             $this->setMetric(
                 self::ACTION_UPDATE,
                 self::KEY_ORDER_SIZE_TOTAL,
@@ -606,7 +611,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 self::ACTION_UPDATE,
                 self::KEY_ORDER_AMOUNT_TOTAL,
                 $storeId,
-                $details['amount']
+                $details['amount'],
+                $amountUnit
             );
 
             $this->setMetric(
@@ -661,6 +667,17 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             $this->updateAvgOrderValues($storeId);
             $this->initDefaultMetrics($storeId);
         }
+    }
+
+    /**
+     * Cronjob to update the orders metrics
+     */
+    public function dailyCron()
+    {
+        if (!$this->_helper->isEnabled()) {
+            return;
+        }
+        $this->initOrderData();
     }
 
     /**
@@ -722,6 +739,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             ->group('main_table.store_id');
         $output = array();
         foreach ($collection as $order) {
+            $amountUnit = Mage::getStoreConfig('currency/options/base', (int)$order->getStoreId());
+
             $output[] = array(
                 'name' => 'Abandonned carts',
                 'unit' => 'orders',
@@ -731,7 +750,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             );
             $output[] = array(
                 'name' => 'Total value of abandoned carts',
-                'unit' => 'Amount',
+                'unit' => $amountUnit,
                 'value' => (float)$order->getSubtotal(),
                 'store_id' => (int)$order->getStoreId(),
                 'type' => 'A'
