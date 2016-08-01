@@ -2,7 +2,7 @@
 <config>
     <modules>
         <CoScale_Monitor>
-            <version>0.15.0</version>
+            <version>0.16.0</version>
         </CoScale_Monitor>
     </modules>
     <global>
@@ -133,14 +133,14 @@
                     </coscale_monitor_metric_order_add>
                 </observers>
             </sales_order_place_after>
-            <sales_order_save_commit_after>
+            <sales_order_save_after>
                 <observers>
                     <coscale_monitor_metric_order_save>
                         <class>coscale_monitor/metric_order</class>
-                        <method>salesOrderSaveCommitAfter</method>
+                        <method>salesOrderSaveAfter</method>
                     </coscale_monitor_metric_order_save>
                 </observers>
-            </sales_order_save_commit_after>
+            </sales_order_save_after>
 
             <controller_action_predispatch_adminhtml_process_massReindex>
                 <observers>
@@ -269,6 +269,7 @@
                 <state_new_key>new</state_new_key>
                 <state_processing_key>processing</state_processing_key>
                 <state_completed_key>complete</state_completed_key>
+                <state_canceled_key>canceled</state_canceled_key>
                 <status_pickpack_pending_key>pending</status_pickpack_pending_key>
                 <status_pickpack_key>processing</status_pickpack_key>
                 <status_pickpack_completed_key>complete</status_pickpack_completed_key>
