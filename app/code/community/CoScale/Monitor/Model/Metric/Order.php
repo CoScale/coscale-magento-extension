@@ -15,6 +15,13 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     protected $statusPickPack = false;
     protected $statusCompletedPickPack = false;
 
+    protected $stateNewKey = '';
+    protected $stateProcessingKey = '';
+    protected $stateCompletedKey = '';
+    protected $statusPendingPickPackKey = '';
+    protected $statusPickPackKey = '';
+    protected $statusCompletedPickPackKey = '';
+
     /**
      * Identifier for total orders
      */
@@ -144,54 +151,77 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         $this->_metricData[self::KEY_ORDER_STATE_PENDING_PICKPACK] = array(
             'name' => 'Orders pending pick/pack',
             'description' => 'The total number of orders in waiting for pick/pack state',
-            'unit' => 'orders'
+            'unit' => 'orders',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_CURRENT_PICKPACK] = array(
             'name' => 'Orders pick/pack',
             'description' => 'The total number of orders in pick/pack state',
-            'unit' => 'orders'
+            'unit' => 'orders',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_ORDER_STATE_COMPLETED_PICKPACK] = array(
             'name' => 'Orders completed pick/pack',
             'description' => 'The total number of orders in completed pick/pack state',
-            'unit' => 'orders'
+            'unit' => 'orders',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_PICKED_QTY] = array(
             'name' => 'Picked qty',
             'description' => 'The qty of orders picked',
-            'unit' => 'qty'
+            'unit' => 'qty',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_PICKED_TIME] = array(
             'name' => 'Picked time',
             'description' => 'Total time to pick/pack',
-            'unit' => 'seconds'
+            'unit' => 'seconds',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_AVGTIME_PICKPACK] = array(
             'name' => 'Avg time pick/pack',
             'description' => 'Avg time to pick/pack an order',
-            'unit' => 'seconds'
+            'unit' => 'seconds',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_TIME_PENDING_PICKPACK] = array(
             'name' => 'Time pending pick/pack',
             'description' => 'The total time needed to pick/pack new orders',
-            'unit' => 'seconds'
+            'unit' => 'seconds',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->_metricData[self::KEY_TIME_CURRENT_PICKPACK] = array(
             'name' => 'Time current pick/pack',
             'description' => 'The total time needed to pick/pack current orders in pick/pack state',
-            'unit' => 'seconds'
+            'unit' => 'seconds',
+            'calctype' => CoScale_Monitor_Model_Metric::CALC_INSTANT,
+            'combine' => true,
         );
 
         $this->statusPendingPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_pending');
         $this->statusPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack');
         $this->statusCompletedPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_completed');
+
+        $this->stateNewKey = Mage::getStoreConfig('system/coscale_monitor/state_new_key');
+        $this->stateProcessingKey = Mage::getStoreConfig('system/coscale_monitor/state_processing_key');
+        $this->stateCompletedKey = Mage::getStoreConfig('system/coscale_monitor/state_completed_key');
+        $this->statusPendingPickPackKey = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_pending_key');
+        $this->statusPickPackKey = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_key');
+        $this->statusCompletedPickPackKey = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_completed_key');
     }
 
     public function resetOnCollect($key)
@@ -202,13 +232,48 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::KEY_ORDER_SIZE_TOTAL_NEW,
             self::KEY_ORDER_SIZE_AVERAGE_NEW,
             self::KEY_ORDER_AMOUNT_TOTAL_NEW,
-
         );
 
         if (in_array($key, $resetKeys)) {
             return true;
         }
         return false;
+    }
+
+    /**
+    * Initialize metrics in case they are not already set
+    *
+    * @param $storeId
+    */
+    public function initDefaultMetrics($storeId)
+    {
+        $initKeys = array(
+            self::KEY_ORDER_TOTAL_NEW,
+            self::KEY_ORDER_AMOUNT_AVERAGE_NEW,
+            self::KEY_ORDER_SIZE_TOTAL_NEW,
+            self::KEY_ORDER_SIZE_AVERAGE_NEW,
+            self::KEY_ORDER_AMOUNT_TOTAL_NEW,
+            self::KEY_ORDER_SIZE_AVERAGE,
+            self::KEY_PICKED_QTY,
+            self::KEY_PICKED_TIME,
+            self::KEY_AVGTIME_PICKPACK,
+            self::KEY_TIME_PENDING_PICKPACK,
+            self::KEY_TIME_CURRENT_PICKPACK,
+        );
+
+        foreach ($initKeys as $key)
+        {
+            $metricData = $this->getMetric($key, $storeId);
+            if (empty($metricData)) {
+                $this->setMetric(
+                    self::ACTION_UPDATE,
+                    $key,
+                    $storeId,
+                    0,
+                    $this->_metricData[$key]['unit']
+                );
+            }
+        }
     }
 
     /**
@@ -371,7 +436,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     }
 
     /**
-     * Update pick/pack avarage values
+     * Update pick/pack average values
      *
      * @param $storeId
      */
@@ -479,8 +544,9 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 'items' => 'SUM(main_table.total_item_count)',
                 'store_id' => 'main_table.store_id',
                 'state' => 'main_table.state',
+                'status' => 'main_table.status',
                 'count' => 'COUNT(*)'))
-            ->group(array('main_table.store_id','main_table.state'));
+            ->group(array('main_table.store_id','main_table.state','main_table.status'));
 
         $data = array();
         foreach ($collection as $order) {
@@ -494,22 +560,37 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                     'count' => 0,
                     'new' => 0,
                     'processing' => 0,
-                    'complete' => 0
+                    'complete' => 0,
+                    'status_pending' => 0,
+                    'status_processing' => 0,
+                    'status_complete' => 0
                 );
             }
             $data[$order->getStoreId()]['items'] += $order->getItems();
             $data[$order->getStoreId()]['amount'] += $order->getAmount();
             $data[$order->getStoreId()]['count'] += $order->getCount();
-            if ($order->getState() == 'new') {
+            if ($order->getState() == $this->stateNewKey) {
                 $data[$order->getStoreId()]['new'] += $order->getCount();
             }
 
-            if ($order->getState() == 'processing') {
+            if ($order->getState() == $this->stateProcessingKey) {
                 $data[$order->getStoreId()]['processing'] += $order->getCount();
             }
 
-            if ($order->getState() == 'complete') {
+            if ($order->getState() == $this->statusCompletedKey) {
                 $data[$order->getStoreId()]['complete'] += $order->getCount();
+            }
+
+            if ($order->getStatus() == $this->statusPendingPickPackKey) {
+                $data[$order->getStoreId()]['status_pending'] += $order->getCount();
+            }
+
+            if ($order->getStatus() == $this->statusPickPackKey) {
+                $data[$order->getStoreId()]['status_processing'] += $order->getCount();
+            }
+
+            if ($order->getStatus() == $this->statusCompletedPickPackKey) {
+                $data[$order->getStoreId()]['status_complete'] += $order->getCount();
             }
         }
 
@@ -556,7 +637,29 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 $details['complete']
             );
 
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_PENDING_PICKPACK,
+                $storeId,
+                $details['status_pending']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_CURRENT_PICKPACK,
+                $storeId,
+                $details['status_processing']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_COMPLETED_PICKPACK,
+                $storeId,
+                $details['status_complete']
+            );
+
             $this->updateAvgOrderValues($storeId);
+            $this->initDefaultMetrics($storeId);
         }
     }
 

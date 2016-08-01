@@ -68,11 +68,18 @@ class CoScale_Monitor_Model_Metric_Abstract
         if (!$name || !$descr || !$unit) {
             throw new Exception('Invalid metric data supplied');
         }
+        $calctype = 0;
+        if (isset($this->_metricData[$key]['calctype'])) {
+            $calctype = $this->_metricData[$key]['calctype'];
+        }
 
         if ($action == self::ACTION_UPDATE) {
-            $this->_metric->updateMetric($key, $store, $type, $name, $descr, $value, $unit);
+            $this->_metric->updateMetric($key, $store, $type, $name, $descr, $value, $unit, $calctype);
         } else {
-            $this->_metric->incrementMetric($key, $store, $type, $name, $descr, $value, $unit);
+            $this->_metric->incrementMetric($key, $store, $type, $name, $descr, $value, $unit, $calctype);
+            if (isset($this->_metricData[$key]['combine']) && $this->_metricData[$key]['combine']) {
+                $this->_metric->incrementMetric($key, 0, $type, $name, $descr, $value, $unit, $calctype);
+            }
         }
     }
 

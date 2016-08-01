@@ -39,6 +39,10 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
      */
     const TYPE_APPLICATION = 2;
 
+    const CALC_DIFFERENCE = 1;
+    const CALC_INSTANT = 2;
+    const CALC_AVERAGE = 3;
+
     /**
      * Construct the metric model
      */
@@ -57,16 +61,18 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
      * @param string $description A longer description of the metric
      * @param mixed $value The value to set
      * @param string $unit The unit the value is saved in
+     * @param int $calctype Calculation Type
      *
      * @throws Exception
      */
-    public function updateMetric($key, $store, $type, $name, $description, $value, $unit)
+    public function updateMetric($key, $store, $type, $name, $description, $value, $unit, $calctype = 0)
     {
         $this->loadByKey($key, $store);
 
         $this->setKey($key)
             ->setStoreId($store)
             ->setType($type)
+            ->setCalculationType($calctype)
             ->setName($name)
             ->setDescription($description)
             ->setValue($value)
@@ -89,12 +95,13 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
      * @param string $description A longer description of the metric
      * @param mixed $value The value to set
      * @param string $unit The unit the value is saved in
+     * @param int $calctype Calculation Type
      */
-    public function incrementMetric($key, $store, $type, $name, $description, $value, $unit)
+    public function incrementMetric($key, $store, $type, $name, $description, $value, $unit, $calctype = 0)
     {
         $this->loadByKey($key, $store);
 
-        $this->updateMetric($key, $store, $type, $name, $description, ($this->getValue() + $value), $unit);
+        $this->updateMetric($key, $store, $type, $name, $description, ($this->getValue() + $value), $unit, $calctype);
     }
 
     /**
@@ -129,6 +136,24 @@ class CoScale_Monitor_Model_Metric extends Mage_Core_Model_Abstract
     {
         $this->_getResource()->loadByKey($this, $key, $store);
         return $this;
+    }
+
+    public function getCalculationTypeCode()
+    {
+        switch ($this->getCalculationType()) {
+            case self::CALC_INSTANT:
+                $code = 'Instant';
+                break;
+            case self::CALC_AVERAGE:
+                $code = 'Average';
+                break;
+            case self::CALC_DIFFERENCE:
+                $code = 'Difference';
+                break;
+            default:
+                $code = false;
+        }
+        return $code;
     }
 
     /**

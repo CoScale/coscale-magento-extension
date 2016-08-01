@@ -23,6 +23,14 @@ class CoScale_Monitor_Model_Output_Generator extends Varien_Object
         return $this->addArray($name, $data);
     }
 
+    protected function addError()
+    {
+        $logger = Mage::helper('coscale_monitor');
+        $logs = $logger->getLogs();
+        $this->setData('error', $logs);
+        return $this;
+    }
+
     protected function addArray($name, $data)
     {
         $origData = $this->getData($name);
@@ -33,6 +41,7 @@ class CoScale_Monitor_Model_Output_Generator extends Varien_Object
 
     public function getJsonOutput()
     {
+        $this->addError();
         return $this->toJson();
     }
 }
