@@ -19,15 +19,17 @@ class CoScale_Monitor_Model_Metric_Observer
             $collection = Mage::getModel('coscale_monitor/metric')->getCollection();
             /** @var CoScale_Monitor_Model_Metric $metric */
             foreach ($collection as $metric) {
-                $output->addMetric(
-                    array(
-                        'name' => $metric->getName(),
-                        'unit' => $metric->getUnit(),
-                        'value' => (float)$metric->getValue(),
-                        'store_id' => (int)$metric->getStoreId(),
-                        'type' => $metric->getTypeText()
-                    )
+                $data = array(
+                    'name' => $metric->getName(),
+                    'unit' => $metric->getUnit(),
+                    'value' => (float)$metric->getValue(),
+                    'store_id' => (int)$metric->getStoreId(),
+                    'type' => $metric->getTypeText()
                 );
+                if ($code = $metric->getCalculationTypeCode()) {
+                    $data['calctype'] = $code;
+                }
+                $output->addMetric($data);
 
                 // Check if metric need to be reset after collection
                 if ($metricOrderDelete->resetOnCollect($metric->getKey())) {

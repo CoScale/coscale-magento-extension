@@ -21,13 +21,13 @@ class CoScale_Shell extends Mage_Shell_Abstract
     {
         $helper = Mage::helper('coscale_monitor');
 
-        if (!$helper->isEnabled()) {
-            echo json_encode(array('error'=>'CoScale Module not active!'));
-            return;
-        }
-
         if ($this->getArg('debug')) {
             $helper->enableDebug();
+        }
+
+        if (!$helper->isEnabled()) {
+            echo json_encode(array('error'=>'CoScale Module not active!' . ' ' . $helper->getLogs()));
+            return;
         }
 
         // Generate output
