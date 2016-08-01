@@ -29,7 +29,7 @@ class CoScale_Monitor_Helper_Data extends Mage_Core_Helper_Abstract
 
             foreach ($tables as $id => $data) {
                 $metricTable = $resource->getTableName($data['table']);
-                if (! $connection->isTableExists(Mage::getConfig()->getTablePrefix().$metricTable)) {
+                if (! $connection->isTableExists($metricTable)) {
                     $this->debugEndError('Module checking', new Exception('Table ' . $metricTable . ' not found!'));
                     return false;
                 }

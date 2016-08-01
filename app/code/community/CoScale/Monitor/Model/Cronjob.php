@@ -19,5 +19,6 @@ class CoScale_Monitor_Model_Cronjob
         // Customer metric data
         Mage::getSingleton('coscale_monitor/metric_customer')->dailyCron();
         Mage::getSingleton('coscale_monitor/metric_product')->dailyCron();
+        Mage::getSingleton('coscale_monitor/metric_order')->dailyCron();
     }
 }
