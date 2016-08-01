@@ -18,6 +18,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     protected $stateNewKey = '';
     protected $stateProcessingKey = '';
     protected $stateCompletedKey = '';
+    protected $stateCanceledKey = '';
     protected $statusPendingPickPackKey = '';
     protected $statusPickPackKey = '';
     protected $statusCompletedPickPackKey = '';
@@ -51,6 +52,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     const KEY_ORDER_STATE_NEW = 2030;
     const KEY_ORDER_STATE_PROCESSING = 2031;
     const KEY_ORDER_STATE_COMPLETED = 2032;
+    const KEY_ORDER_STATE_CANCELED = 2033;
 
     /**
      * Identifier for pick order and time calculation
@@ -148,6 +150,12 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             'unit' => 'orders'
         );
 
+        $this->_metricData[self::KEY_ORDER_STATE_CANCELED] = array(
+            'name' => 'Orders canceled',
+            'description' => 'The total number of orders in canceled state',
+            'unit' => 'orders'
+        );
+
         $this->_metricData[self::KEY_ORDER_STATE_PENDING_PICKPACK] = array(
             'name' => 'Orders pending pick/pack',
             'description' => 'The total number of orders in waiting for pick/pack state',
@@ -219,6 +227,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         $this->stateNewKey = Mage::getStoreConfig('system/coscale_monitor/state_new_key');
         $this->stateProcessingKey = Mage::getStoreConfig('system/coscale_monitor/state_processing_key');
         $this->stateCompletedKey = Mage::getStoreConfig('system/coscale_monitor/state_completed_key');
+        $this->stateCanceledKey = Mage::getStoreConfig('system/coscale_monitor/state_canceled_key');
         $this->statusPendingPickPackKey = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_pending_key');
         $this->statusPickPackKey = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_key');
         $this->statusCompletedPickPackKey = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_completed_key');
@@ -348,7 +357,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
      *
      * @param Varien_Event_Observer $observer
      */
-    public function salesOrderSaveCommitAfter(Varien_Event_Observer $observer)
+    public function salesOrderSaveAfter(Varien_Event_Observer $observer)
     {
         $keys = array();
         if (!$this->_helper->isEnabled()) {
@@ -379,6 +388,9 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                     break;
                 case Mage_Sales_Model_Order::STATE_COMPLETE:
                     $keys[self::KEY_ORDER_STATE_COMPLETED] = 1;
+                    break;
+                case Mage_Sales_Model_Order::STATE_CANCELED:
+                    $keys[self::KEY_ORDER_STATE_CANCELED] = 1;
                     break;
             }
         }
@@ -547,9 +559,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 'items' => 'SUM(main_table.total_item_count)',
                 'store_id' => 'main_table.store_id',
                 'state' => 'main_table.state',
-                'status' => 'main_table.status',
                 'count' => 'COUNT(*)'))
-            ->group(array('main_table.store_id','main_table.state','main_table.status'));
+            ->group(array('main_table.store_id','main_table.state'));
 
         $data = array();
         foreach ($collection as $order) {
@@ -564,26 +575,52 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                     'new' => 0,
                     'processing' => 0,
                     'complete' => 0,
-                    'status_pending' => 0,
-                    'status_processing' => 0,
-                    'status_complete' => 0
                 );
             }
             $data[$order->getStoreId()]['items'] += $order->getItems();
             $data[$order->getStoreId()]['amount'] += $order->getAmount();
             $data[$order->getStoreId()]['count'] += $order->getCount();
-            if ($order->getState() == $this->stateNewKey) {
+            if ($order->getState() == Mage_Sales_Model_Order::STATE_NEW) {
                 $data[$order->getStoreId()]['new'] += $order->getCount();
             }
 
-            if ($order->getState() == $this->stateProcessingKey) {
+            if ($order->getState() == Mage_Sales_Model_Order::STATE_PROCESSING) {
                 $data[$order->getStoreId()]['processing'] += $order->getCount();
             }
 
-            if ($order->getState() == $this->statusCompletedKey) {
+            if ($order->getState() == Mage_Sales_Model_Order::STATE_COMPLETE) {
                 $data[$order->getStoreId()]['complete'] += $order->getCount();
             }
 
+            if ($order->getState() == Mage_Sales_Model_Order::STATE_CANCELED) {
+                $data[$order->getStoreId()]['canceled'] += $order->getCount();
+            }
+
+            if ($order->getState() == Mage_Sales_Model_Order::STATE_HOLDED) {
+                $data[$order->getStoreId()]['holded'] += $order->getCount();
+            }
+        }
+        $status_collection = Mage::getResourceModel('sales/order_collection');
+        if (!is_object($status_collection)) {
+            return;
+        }
+        $status_collection->getSelect()
+            ->reset('columns')
+            ->columns(array('store_id' => 'main_table.store_id',
+                'status' => 'main_table.status',
+                'count' => 'COUNT(*)'))
+            ->group(array('main_table.store_id','main_table.status'));
+        foreach ($status_collection as $order) {
+            if (!$order->getStoreId()) {
+                continue;
+            }
+            if (!isset($data[$order->getStoreId()])) {
+                $data[$order->getStoreId()] = array(
+                    'status_pending' => 0,
+                    'status_processing' => 0,
+                    'status_complete' => 0
+                );
+            }
             if ($order->getStatus() == $this->statusPendingPickPackKey) {
                 $data[$order->getStoreId()]['status_pending'] += $order->getCount();
             }
@@ -641,6 +678,13 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
                 self::KEY_ORDER_STATE_COMPLETED,
                 $storeId,
                 $details['complete']
+            );
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ORDER_STATE_CANCELED,
+                $storeId,
+                $details['canceled']
             );
 
             $this->setMetric(
@@ -735,7 +779,7 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         $collection->getSelect()
             ->columns(array('store_id' => 'main_table.store_id',
                 'count' => 'COUNT(*)',
-                'subtotal' => 'subtotal'))
+                'subtotal' => 'SUM(subtotal)'))
             ->group('main_table.store_id');
         $output = array();
         foreach ($collection as $order) {
