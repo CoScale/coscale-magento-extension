@@ -2,7 +2,7 @@
 <config>
     <modules>
         <CoScale_Monitor>
-            <version>0.17.0</version>
+            <version>0.17.1</version>
         </CoScale_Monitor>
     </modules>
     <global>

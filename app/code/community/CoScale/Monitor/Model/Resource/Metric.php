@@ -47,4 +47,9 @@ class CoScale_Monitor_Model_Resource_Metric extends Mage_Core_Model_Resource_Db_
 
         return $this;
     }
+
+    public function truncate() {
+        $this->_getWriteAdapter()->query('TRUNCATE TABLE '.$this->getMainTable());
+        return $this;
+    }
 }
