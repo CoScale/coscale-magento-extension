@@ -68,6 +68,12 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
     const KEY_TIME_CURRENT_PICKPACK = 2048;
 
     /**
+     * Identifier for abandoned carts
+     */
+    const KEY_ABANDONED_CARTS = 2060;
+    const KEY_ABANDONED_CARTS_VALUE_TOTAL = 2061;
+
+    /**
      * Public contructor function
      */
     public function _contruct()
@@ -220,6 +226,18 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             'combine' => true,
         );
 
+        $this->_metricData[self::KEY_ABANDONED_CARTS] = array(
+            'name' => 'Abandonned carts',
+            'description' => 'Abandonned carts',
+            'unit' => 'orders',
+        );
+
+        $this->_metricData[self::KEY_ABANDONED_CARTS_VALUE_TOTAL] = array(
+            'name' => 'Total value of abandoned carts',
+            'description' => 'Total value of abandoned carts',
+            'unit' => 'Amount',
+        );
+
         $this->statusPendingPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_pending');
         $this->statusPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack');
         $this->statusCompletedPickPack = Mage::getStoreConfig('system/coscale_monitor/status_pickpack_completed');
@@ -268,6 +286,8 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
             self::KEY_AVGTIME_PICKPACK,
             self::KEY_TIME_PENDING_PICKPACK,
             self::KEY_TIME_CURRENT_PICKPACK,
+            self::KEY_ABANDONED_CARTS,
+            self::KEY_ABANDONED_CARTS_VALUE_TOTAL,
         );
 
         $amountUnit = Mage::getStoreConfig('currency/options/base', $storeId);
@@ -785,25 +805,22 @@ class CoScale_Monitor_Model_Metric_Order extends CoScale_Monitor_Model_Metric_Ab
         foreach ($collection as $order) {
             $amountUnit = Mage::getStoreConfig('currency/options/base', (int)$order->getStoreId());
 
-            $output[] = array(
-                'name' => 'Abandonned carts',
-                'unit' => 'orders',
-                'value' => (float)$order->getCount(),
-                'store_id' => (int)$order->getStoreId(),
-                'type' => 'A'
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ABANDONED_CARTS,
+                (int)$order->getStoreId(),
+                (float)$order->getCount()
             );
-            $output[] = array(
-                'name' => 'Total value of abandoned carts',
-                'unit' => $amountUnit,
-                'value' => (float)$order->getSubtotal(),
-                'store_id' => (int)$order->getStoreId(),
-                'type' => 'A'
+
+            $this->setMetric(
+                self::ACTION_UPDATE,
+                self::KEY_ABANDONED_CARTS_VALUE_TOTAL,
+                (int)$order->getStoreId(),
+                (float)$order->getSubtotal()
             );
         }
         return $output;
     }
-
-
 
     public function getEmailQueueSize()
     {

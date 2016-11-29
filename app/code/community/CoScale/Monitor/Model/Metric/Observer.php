@@ -33,7 +33,7 @@ class CoScale_Monitor_Model_Metric_Observer
 
                 // Check if metric need to be reset after collection
                 if ($metricOrderDelete->resetOnCollect($metric->getKey())) {
-                    $metric->delete();
+                    $metric->setValue(0);
                 }
             }
             $logger->debugEnd('Metrics Collection');
