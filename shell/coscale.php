@@ -1,6 +1,8 @@
 <?php
 
-require_once 'abstract.php';
+$importPath = dirname ( $argv[0] );
+
+require_once $importPath . '/abstract.php';
 
 /**
  * CoScale shell script that will output the different elements of the module
